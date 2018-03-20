@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# @file: generate_benchmark_data_marcc.py
-# @brief: Master script for running membrane energy function benchmarks on MARCC
+# @file: generate_benchmark_data.py
+# @brief: Master script for running membrane energy function benchmarks on Jazz
 # @notes: This script should **always** be run from the home membrane-efxn directory
-# @author: Rebecca F. Alford (ralford3@jhu.edu)
+# @author: Rebecca F. Alford (rfalford12@gmail.com)
 
 import sys, os
 from string import Template
@@ -11,58 +11,12 @@ _script_path_ = os.path.dirname( os.path.realpath(__file__) )
 
 ##############################################################################
 ### Global data pertaining to the benchmark run
-benchmark = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/membrane-efxn-benchmark/"
-rosettadir = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta/main/source/bin/"
-# For now - MARCC only includes master
-rosettadir_stable = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta/main/source/bin/"
+benchmark = "/home/ralford/membrane-efxn-benchmark/"
+rosettadir = "/home/ralford/apps/Rosetta/main/source/bin/"
+rosettadir_stable = "/home/ralford/apps/Rosetta-stable/main/source/bin/"
 buildenv = "release"
 compiler = "gcc"
 ##############################################################################
-
-def write_and_submit_slurm_batch_script( path, name, executable, arguments ): 
-
-	# Create a new sbatch file named for the job type and test
-	filename = path = "/" + name + ".sbatch" 
-	with open( filename, 'w' ) as f: 
-
-		# Write bash and comments
-		f.write( "#!/bin/bash -l\n" )
-		f.write ( "\n" )
-		f.write( "#----------------------------------------------------\n" )
-		f.write( "# SLURM job script for membrane force field benchmarking applications\n" )
-		f.write( "# Runs on MARCC with MPI applications\n" )
-		f.write( "#----------------------------------------------------\n" )
-		f.write( "\n" )
-
-		# Write the job information
-		f.write( "#SBATCH --job-name=" + name + "\n" )
-		f.write( "#SBATCH --partition=parallel\n" )
-		f.write( "#SBATCH --nodes=1\n" )
-		f.write( "#SBATCH --time=60:0:0\n" )
-		f.write( "#SBATCH --mem=120GB\n" )
-
-		# Write job specific output and reporting information
-		f.write( "#SBATCH --output " + path + "/" + name + ".%j.out\n" )
-		f.write( "#SBATCH --error " + path + "/" + name + ".%j.err\n" )
-		f.write( "#SBATCH --mail-user=rfalford12@gmail.com\n" )
-		f.write( "#SBATCH --mail-type=ALL\n" )
-		f.write( "\n" )
-		
-		# Soecify required modules
-		f.write( "module unload openmpi\n" )
-		f.write( "module load intel-mpi\n" )
-		f.write( "module load ")
-
-		# Provide a description of the job
-		f.write( "ROSETTAEXE=" + executable + "\n" )
-		f.write(  "echo Starting MPI job running $ROSETTAEXE\n" )
-
-		# Run the job
-		f.write( "mpirun $EXE " + arguments + "\n" )
-
-    # Run the condor file
-    os.system( "sbatch " + filename )
-
 
 def write_and_submit_condor_script( path, name, executable, arguments, queue_no=1 ):
 
@@ -75,6 +29,7 @@ def write_and_submit_condor_script( path, name, executable, arguments, queue_no=
         f.write( "output = " + path + "/" + name + ".out\n" )
         f.write( "error = " + path + "/" + name + ".err\n" )
         f.write( "notify_user = rfalford12@gmail.com\n" )
+        f.write( "request_memory = 15000\n" )
         f.write( "Executable = " + executable + "\n" )
         f.write( "Arguments = " + arguments + "\n" )
         f.write( "Queue " + str(queue_no) + "\n" )
@@ -112,8 +67,8 @@ def test_monomer_landscape( energy_fxn, rosetta_exe_path ):
         arguments = " -overwrite -in:file:s " +  pdbfile + " -mp:setup:spanfiles " + spanfile + " -parser:script_vars sfxn_weights=" + energy_fxn + " -parser:protocol " + xml_script
 
         # Generate a condor submission file and submit the job to Jazz
-        #print "Submitting monomer-landscape test case:", case
-        #write_and_submit_condor_script( outdir, case, executable, arguments )
+        print "Submitting monomer-landscape test case:", case
+        write_and_submit_condor_script( outdir, case, executable, arguments )
 
 def test_aro_landscape( energy_fxn, rosetta_exe_path ):
 
@@ -144,8 +99,8 @@ def test_aro_landscape( energy_fxn, rosetta_exe_path ):
 
         # Generate a condor submission file and submit the job to Jazz
         condor_case_name = case.split("/")[1]
-        #print "Submitting aro-landscape test case:", condor_case_name
-        #write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
+        print "Submitting aro-landscape test case:", condor_case_name
+        write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
 
 def test_lk_landscape( energy_fxn, rosetta_exe_path ):
 
@@ -176,8 +131,8 @@ def test_lk_landscape( energy_fxn, rosetta_exe_path ):
 
         # Generate a condor submission file and submit the job to Jazz
         condor_case_name = case.split("/")[1]
-        #print "Submitting lk-landscape test case:", condor_case_name
-        #write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
+        print "Submitting lk-landscape test case:", condor_case_name
+        write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
 
 def test_ddG_of_mutation( energy_fxn ):
 
@@ -338,13 +293,13 @@ def test_sequence_recovery( energy_fxn, rosetta_exe_path ):
         # Setup arguments by substitution
         pdbfile = path_to_test + "/inputs/" + case + "/" + case + "_tr_ignorechain.pdb"
         spanfile = path_to_test + "/inputs/" + case + "/" + case + "_tr.span"
-        s = Template( " -in:file:s $pdbfile -mp:setup:spanfiles $spanfile -score:weights $sfxn -in:membrane -out:path:all $outdir -in:file:load_PDB_components false -in:ignore_unrecognized_res -restore_talaris_behavior" )
+        s = Template( "-in:file:s $pdbfile -mp:setup:spanfiles $spanfile -score:weights $sfxn -in:membrane -out:path:all $outdir -in:file:load_PDB_components false -in:ignore_unrecognized_res -restore_talaris_behavior" )
         arguments = s.substitute( pdbfile=pdbfile, spanfile=spanfile, sfxn=energy_fxn, outdir=outdir )
 
         # Generate a condor submission file and submit the job to Jazz
         print "Submitting sequence recovery test case:", case
         queue_no = 1
-        write_and_submit_slurm_batch_script( outdir, case, executable, arguments )
+        write_and_submit_condor_script( outdir, case, executable, arguments, str(queue_no) )
 
 def test_docking( energy_fxn, rosetta_exe_path ):
 
@@ -478,7 +433,7 @@ def test_decoy_discrimination( energy_fxn, rosetta_exe_path ):
         native = path_to_test + "/inputs/dutagaci-set/" + case + "/" + case + "_native.pdb"
         spanfile = path_to_test + "/inputs/dutagaci-set/" + case + "/" + case + ".span"
         modelslist = path_to_test + "/inputs/dutagaci-set/" + case + "/decoys.list"
-        s = Template( "-restore_talaris_behavior -overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
+        s = Template( "-overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
         arguments = s.substitute( modellist=modelslist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
 
         # Generate a condor submission file and submit the job to Jazz
