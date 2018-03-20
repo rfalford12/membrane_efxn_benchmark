@@ -4,10 +4,9 @@
 # @notes: This script should **always** be run from the home membrane-efxn directory
 # @author: Rebecca F. Alford (ralford3@jhu.edu)
 
-## TODO: upgrade which tests option later
-## TODO: Add an option to toggle higher RAM
 ## TODO: Add an option to toggle restore_talaris_behavior
 ## TODO: PH output needs to be put into separate folders otherwise the naming is ambiguous
+## TODO: Change teh paths to be compatible with this
 
 import sys, os
 from string import Template
@@ -15,14 +14,24 @@ from optparse import OptionParser, IndentedHelpFormatter
 _script_path_ = os.path.dirname( os.path.realpath(__file__) )
 
 ##############################################################################
-### Global data pertaining to the benchmark run
+### Global data for benchmark runs on Jazz
 benchmark = "/home/ralford/membrane-efxn-benchmark/"
 rosettadir = "/home/ralford/apps/Rosetta/main/source/bin/"
 rosettadir_stable = "/home/ralford/apps/Rosetta-stable/main/source/bin/"
 platform = "linux"
 buildenv = "release"
 compiler = "gcc"
+
 ##############################################################################
+### Global data for benchmark runs on MARCC
+benchmark = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/membrane_efxn_benchmark/"
+rosettadir = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta/main/source/bin/"
+rosettadir_stable = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta-stable/main/source/bin/"
+platform = "mpi.linux" 
+buildenv = "release"
+compiler = "gcc"
+##############################################################################
+
 
 def write_and_submit_condor_script( path, name, executable, arguments, queue_no=1, high_mem=False ):
 
@@ -91,7 +100,7 @@ def write_and_submit_slurm_batch_script( path, name, executable, arguments, num_
     sbatch_command = "sbatch " + filename
     os.system( sbatch_command )
 
-def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_name, input_list, xml_protocol, single_TM="false", pH="0" ): 
+def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_name, input_list, xml_protocol, restore, single_TM="false", pH="0" ): 
     """
     A general functions for running energy landscape calculations given a list of input helices
 
@@ -137,9 +146,11 @@ def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_
             spanfile = "single_TM_mode"
 
         # Should I tune the pH of my simulation?
-        arguments = " -restore_talaris_behavior -overwrite -in:file:s " +  pdbfile + " -mp:setup:spanfiles " + spanfile + " -parser:script_vars sfxn_weights=" + energy_fxn + " -parser:protocol " + xml_script
+        arguments = " -overwrite -in:file:s " +  pdbfile + " -mp:setup:spanfiles " + spanfile + " -parser:script_vars sfxn_weights=" + energy_fxn + " -parser:protocol " + xml_script
         if ( pH != "0" ): 
             arguments = arguments + " -pH_mode true -value_pH " + pH
+        if ( restore == True ): 
+            arguments = arguments + " -restore_talaris_behavior"
 
         # Generate a condor submission file and submit the job to Jazz
         print "Submitting test case for " + test_name + ": " +  case
@@ -148,7 +159,7 @@ def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_
         else: 
             write_and_submit_condor_script( outdir, case, executable, arguments )
 
-def run_ddG_of_mutation_test( energy_fxn, list_of_ddGs, test_name ): 
+def run_ddG_of_mutation_test( energy_fxn, list_of_ddGs, test_name, restore ): 
     """
     A general function for calculating the ddG of single point mutations
 
@@ -172,11 +183,13 @@ def run_ddG_of_mutation_test( energy_fxn, list_of_ddGs, test_name ):
     mlist = path_to_test + "/inputs/" + list_of_ddGs
     s = Template( "--energy_fxn $energy_func --mutation_list $list_of_mutations --outdir  $outdir")
     arguments = s.substitute( energy_func=energy_function, list_of_mutations=mlist, outdir=outdir )
-    
+    if ( restore == True ): 
+        arguments = arguments + " --restore"
+
     print "Submitting ddG of mutation test case " + test_name
     os.system( "python " + python_script + " " + arguments )
 
-def run_fixed_backbone_design_calc( energy_fxn, rosetta_exe_path, cluster_type ): 
+def run_fixed_backbone_design_calc( energy_fxn, rosetta_exe_path, cluster_type, restore ): 
     """
     A function for running the fixed backbone design calculations needed for the sequence recovery test
 
@@ -184,6 +197,7 @@ def run_fixed_backbone_design_calc( energy_fxn, rosetta_exe_path, cluster_type )
         energy_fxn = energy function to use (typically, name of the weights file)
         rosetta_exe_path = pah to compiled Rosetta executable
         cluster_type = specify slurm or condor job submission
+        restore = Restore to talalaris behavior prior to ref2015 for reference benchmark run
     """
 
     print "Initializing fixed backbone design calculations for sequence recovery test" 
@@ -227,7 +241,7 @@ def run_fixed_backbone_design_calc( energy_fxn, rosetta_exe_path, cluster_type )
             write_and_submit_condor_script( outdir, case, executable, arguments, queue_no, high_mem )
 
 
-def run_docking_calc( energy_fxn, rosetta_exe_path, cluster_type, test_set ): 
+def run_docking_calc( energy_fxn, rosetta_exe_path, cluster_type, test_set, restore ): 
     """
     A function for running the docking calculations needed for the docking test
 
@@ -236,6 +250,7 @@ def run_docking_calc( energy_fxn, rosetta_exe_path, cluster_type, test_set ):
         rosetta_exe_path = pah to compiled Rosetta executable
         cluster_type = specify slurm or condor job submission
         test_set = Name of published set of test cases
+        restore = Restore behavior to pre ref2015 for reference benchmark runs
     """
 
     print "Initializing test: docking"
@@ -268,6 +283,8 @@ def run_docking_calc( energy_fxn, rosetta_exe_path, cluster_type, test_set ):
         spanfile = path_to_test + "/inputs/" + test_set + "/" + case + "/" + case + "_AB.span"
         s = Template( " -in:file:s $prepacked -in:file:native $native -mp:setup:spanfiles $spanfile -score:weights $sfxn -run:multiple_processes_writing_to_one_directory -docking:partners A_B -docking:dock_pert 3 8 -packing:pack_missing_sidechains 0 -nstruct 1000 -out:path:all $outdir" )
         arguments = s.substitute( native=native, prepacked=prepacked, spanfile=spanfile, sfxn=energy_fxn, outdir=outdir )
+        if ( restore == True ): 
+            arguments = arguments + " -restore_talaris_behavior"
 
         # Generate job submission file and then submit to cluster
         print "Submitting docking test case from set " + test_set + ":", case
@@ -278,7 +295,7 @@ def run_docking_calc( energy_fxn, rosetta_exe_path, cluster_type, test_set ):
             write_and_submit_condor_script( outdir, case, executable, arguments, str(queue_no) )
 
 
-def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type ): 
+def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, restore ): 
     """
     A function for running the docking calculations needed for the docking test
 
@@ -286,6 +303,7 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type ):
         energy_fxn = energy function to use (typically, name of the weights file)
         rosetta_exe_path = pah to compiled Rosetta executable
         cluster_type = specify slurm or condor job submission
+        restore = Option to restore talaris behavior before ref2015 for reference runs
     """
 
     print "Initializing test: decoy-discrimination"
@@ -322,6 +340,8 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type ):
             modelslist = path_to_test + "/inputs/yarov-yaravoy-set/" + case + "/models." + str(i) + ".list"
             s = Template( "-overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
             arguments = s.substitute( modellist=modelslist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
+            if ( restore == True ): 
+                arguments = arguments + " -restore_talaris_behavior"
 
             # Generate a condor submission file and submit the job to Jazz
             condor_case_name = case + "_models_" + str(i)
@@ -355,6 +375,8 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type ):
         modelslist = path_to_test + "/inputs/dutagaci-set/" + case + "/decoys.list"
         s = Template( " -overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
         arguments = s.substitute( modellist=modelslist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
+        if ( restore == True ): 
+            arguments = arguments + " -restore_talaris_behavior"
 
         # Generate a condor submission file and submit the job to Jazz
         condor_case_name = case + "_dutagaci"
@@ -385,6 +407,11 @@ def main( args ):
         action="store", 
         help="Specify which test groups to run. Options are: ddG, landscape, prediction", )
 
+    parse.add_option( '--restore_talaris', '-r', 
+        action="store", 
+        help="Restore talaris behavior using tthe flag -restore_talaris_behavior for reference runs"
+        )
+
     (options, args) = parser.parse_args(args=args[1:])
     global Options
     Options = options
@@ -412,13 +439,17 @@ def main( args ):
                 print "Invalid test type", t, "Exiting..."
                 sys.exit()
 
-
     # Choose rosetta path based on input options
     rosetta_exe_path = ""
     if ( Options.stable_master == "true" ): 
         rosetta_exe_path = rosettadir_stable
     else: 
         rosetta_exe_path = rosettadir
+
+    # Set option for restoring talaris behavior
+    restore = False
+    if ( Option.restore_talaris == "true" ): 
+        restore = True
 
     # Make an output data directory
     outdir = benchmark + "data/" + Options.energy_fxn
@@ -430,49 +461,49 @@ def main( args ):
     if ( "landscape" in test_types ): 
     
         # Energy landscape test for single TM peptides found in nature
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-monomer-landscape", "helices.list", "monomer-landscape.xml" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-monomer-landscape", "helices.list", "monomer-landscape.xml", restore )
 
         # Energy landscape test for aromatic-capped peptides
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-aro-landscape", "aro_helices.list", "aro-landscape.xml", "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-aro-landscape", "aro_helices.list", "aro-landscape.xml", restore, "true" )
 
         # Energy landscape test for leucine-lysine peptides
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-lk-landscape", "lk_peptides.list", "lk-landscape.xml", "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-lk-landscape", "lk_peptides.list", "lk-landscape.xml", restore, "true" )
 
     # Run ddG calculations
     if ( "ddG" in test_types ): 
 
         # ddG of insertion landscape calculation for Ulmschneider set
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-ddG-of-insertion", "insertion_peptide.dat", "landscape.xml", "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-ddG-of-insertion", "insertion_peptide.dat", "landscape.xml", restore, "true" )
 
         # ddG of insertion landscape calculation for pH dependent set - generate at pH = 4
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-pH-dependent-insertion", "pH-inserted-helices.list", "pH-dependent-landscape.xml", "true", "4" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-pH-dependent-insertion", "pH-inserted-helices.list", "pH-dependent-landscape.xml", restore, "true", "4" )
     
         # ddG of insertion landscape calculation for pH dependent set - generate at pH = 7
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-pH-dependent-insertion", "pH-inserted-helices.list", "pH-dependent-landscape.xml", "true", "7" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-pH-dependent-insertion", "pH-inserted-helices.list", "pH-dependent-landscape.xml", restore, "true", "7" )
 
         # ddG of mutation calculation for Moon & Fleming Set
-        run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA/OmpLA_Moon_Fleming_set.dat", "OmpLA_Moon_Fleming_set" )
+        run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA/OmpLA_Moon_Fleming_set.dat", "OmpLA_Moon_Fleming_set", restore )
 
         # ddG of mutation calculation for McDonald & Fleming Set
-        run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA_aro/OmpLA_aro_McDonald_Fleming_set.dat", "OmpLA_aro_McDonald_Fleming_set" )
+        run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA_aro/OmpLA_aro_McDonald_Fleming_set.dat", "OmpLA_aro_McDonald_Fleming_set", restore )
 
         # ddG of mutation calculation for Marx & Fleming set
-        run_ddG_of_mutation_calc( Options.energy_fxn, "PagP/PagP_Marx_Fleming_set.dat", "PagP_Marx_Fleming_set" )
+        run_ddG_of_mutation_calc( Options.energy_fxn, "PagP/PagP_Marx_Fleming_set.dat", "PagP_Marx_Fleming_set", restore )
 
     # Run prediction calculations
     if ( "prediction" in test_types ): 
 
         # Fixed backbone design calculation for sequence recovery test
-        run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type )
+        run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, resotre )
 
         # Docking calculation for small homodimer set (Lomize et al. 2017)
-        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set" )
+        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
 
         # Docking calculation for large homodimer set (Alford & Koehler Leman 2015)
-        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set" )
+        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", resotre )
 
         # This doesn't have a label on it - so I'm wondering if this is where I had left off... 
-        run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type )
+        run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
 
 if __name__ == "__main__" : main(sys.argv)

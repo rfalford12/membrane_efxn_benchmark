@@ -100,12 +100,15 @@ def main( args ):
 
     parser.add_option('--repack_radius', '-r',
         action="store",
-        help="Repack radius for making mutations"
-    )
+        help="Repack radius for making mutations")
 
     parser.add_option('--outdir', '-o',
         action="store",
         help="Output directory for the data file",)
+
+    parser.add_option('--restore', '-t', 
+        action="store", 
+        help="Restore talaris behavior to pre-ref2015 for refernce benchmarks",)
 
 
     # parse arguments
@@ -123,7 +126,9 @@ def main( args ):
         sys.exit()
 
     # Initialize Pyrosetta with const options
-    option_string = "-run:constant_seed -in:ignore_unrecognized_res -restore_talaris_behavior"
+    option_string = "-run:constant_seed -in:ignore_unrecognized_res"
+    if ( Options.restore ): 
+        option_string = option_string + " -restore_talaris_behavior"
     init( extra_options = option_string )
 
     # Read database file including mutations (space delimited)
