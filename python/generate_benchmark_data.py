@@ -461,13 +461,13 @@ def main( args ):
     if ( "landscape" in test_types ): 
     
         # Energy landscape test for single TM peptides found in nature
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-monomer-landscape", "helices.list", "monomer-landscape.xml", restore )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.1_monomer_landscape", "helices.list", "monomer-landscape.xml", restore )
 
         # Energy landscape test for aromatic-capped peptides
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-aro-landscape", "aro_helices.list", "aro-landscape.xml", restore, "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.2_aro_landscape", "aro_helices.list", "aro-landscape.xml", restore, "true" )
 
         # Energy landscape test for leucine-lysine peptides
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-lk-landscape", "lk_peptides.list", "lk-landscape.xml", restore, "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.3_lk_landscape", "lk_peptides.list", "lk-landscape.xml", restore, "true" )
 
     # Run ddG calculations
     if ( "ddG" in test_types ): 
