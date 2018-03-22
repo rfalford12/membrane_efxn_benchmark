@@ -259,7 +259,8 @@ def run_docking_calc( energy_fxn, rosetta_exe_path, cluster_type, test_set, rest
     inputs = benchmark + "inputs/test_3.2_docking"
     executable = rosetta_exe_path + "mp_dock" + "." + platform + compiler + buildenv
     base_outdir = benchmark + "data/" + energy_fxn + "/test_3.2_docking"
-    os.system( "mkdir " + base_outdir )
+    if ( not os.path.isdir( base_outdir ) ): 
+        os.system( "mkdir " + base_outdir )
 
     list_of_test_cases = inputs + "/" + test_set + "/dimers.list" 
     with open( list_of_test_cases, 'rb' ) as f: 
