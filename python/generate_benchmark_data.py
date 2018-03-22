@@ -96,8 +96,8 @@ def write_and_submit_slurm_batch_script( path, name, executable, arguments, num_
         f.close()
 
     # Run the slurm job file
-    sbatch_command = "sbatch " + filename
-    os.system( sbatch_command )
+    #sbatch_command = "sbatch " + filename
+    #os.system( sbatch_command )
 
 def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_name, input_list, xml_protocol, restore, single_TM="false", pH="0" ): 
     """
@@ -293,7 +293,6 @@ def run_docking_calc( energy_fxn, rosetta_exe_path, cluster_type, test_set, rest
         else: 
             queue_no = 300
             write_and_submit_condor_script( outdir, case, executable, arguments, str(queue_no) )
-
 
 def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, restore ): 
     """
