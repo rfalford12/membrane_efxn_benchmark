@@ -96,8 +96,8 @@ def write_and_submit_slurm_batch_script( path, name, executable, arguments, num_
         f.close()
 
     # Run the slurm job file
-    sbatch_command = "sbatch " + filename
-    os.system( sbatch_command )
+    #sbatch_command = "sbatch " + filename
+    #os.system( sbatch_command )
 
 def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_name, input_list, xml_protocol, restore, single_TM="false", pH="0" ): 
     """
@@ -493,16 +493,16 @@ def main( args ):
     if ( "prediction" in test_types ): 
 
         # Fixed backbone design calculation for sequence recovery test
-        run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, resotre )
+        run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
         # Docking calculation for small homodimer set (Lomize et al. 2017)
-        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
+        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
 
         # Docking calculation for large homodimer set (Alford & Koehler Leman 2015)
-        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", resotre )
+        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", resotre )
 
         # This doesn't have a label on it - so I'm wondering if this is where I had left off... 
-        run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
+        #run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
 
 if __name__ == "__main__" : main(sys.argv)
