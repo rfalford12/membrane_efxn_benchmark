@@ -418,7 +418,7 @@ def main( args ):
 
     # Check that required options are provided and contents are valid
     if ( not Options.energy_fxn or not Options.stable or not Options.cluster_type ): 
-        print "Missing required options --energy_fxn, --stable_master, and/or --cluster_type! Exiting..."
+        print "Missing required options --energy_fxn, --stable, and/or --cluster_type! Exiting..."
         sys.exit()
 
     if ( ( not Options.cluster_type == "SLURM" ) and ( not Options.cluster_type == "CONDOR" ) ): 
@@ -441,7 +441,7 @@ def main( args ):
 
     # Choose rosetta path based on input options
     rosetta_exe_path = ""
-    if ( Options.stable_master == "true" ): 
+    if ( Options.stable == "true" ): 
         rosetta_exe_path = rosettadir_stable
     else: 
         rosetta_exe_path = rosettadir
