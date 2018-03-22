@@ -50,7 +50,7 @@ def write_and_submit_condor_script( path, name, executable, arguments, queue_no=
         f.write( "Queue " + str(queue_no) + "\n" )
 
     # Run the condor file
-    os.system( "condor_submit " + filename )
+    #os.system( "condor_submit " + filename )
 
 def write_and_submit_slurm_batch_script( path, name, executable, arguments, num_nodes=1 ): 
 
