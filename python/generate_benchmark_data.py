@@ -407,7 +407,7 @@ def main( args ):
         action="store", 
         help="Specify which test groups to run. Options are: ddG, landscape, prediction", )
 
-    parse.add_option( '--restore_talaris', '-r', 
+    parser.add_option( '--restore_talaris', '-r', 
         action="store", 
         help="Restore talaris behavior using tthe flag -restore_talaris_behavior for reference runs"
         )
