@@ -116,15 +116,15 @@ def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_
     print "Initializing energy landscape test for " + test_name
 
     # Read list of energy landscape test cases
-    path_to_test = benchmark + "inputs/" + test_name 
-    list_of_test_cases = path_to_test + "/" + input_list 
+    inputs = benchmark + "inputs/" + test_name 
+    list_of_test_cases = inputs + "/" + input_list 
     with open( list_of_test_cases, 'rb' ) as f: 
         test_cases = f.readlines()
     test_cases = [ x.strip() for x in test_cases ]
 
     # Generate path to executable
     executable = rosetta_exe_path + "rosetta_scripts" + "." + platform + compiler + buildenv
-    xml_script = path_to_test + "/" + xml_protocol
+    xml_script =  benchmark + "/" + xml_protocol
 
     # Change directories to a data analysis dir
     outdir = benchmark + "data/" + energy_fxn + "/" + test_name
@@ -135,12 +135,12 @@ def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_
     for case in test_cases:
 
         # Setup case-specific variables (pdbfile, spanfile, xmlargs)
-        pdbfile = path_to_test + "/inputs/" + case + "/" + case + ".pdb"
+        pdbfile = inputs + "/" + case + "/" + case + ".pdb"
 
         # Should I use a single_TM_peptide span estimation or a user-provided spanfile? 
         spanfile = ""
         if ( single_TM == "false" ): 
-            spanfile = path_to_test + "/inputs/" + case + "/" + case + ".span"
+            spanfile = inputs + "/" + case + "/" + case + ".span"
         else: 
             spanfile = "single_TM_mode"
 
