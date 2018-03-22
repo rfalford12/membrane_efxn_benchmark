@@ -4,7 +4,9 @@
 # @author: Rebecca F. Alford (ralford3@jhu.edu)
 
 import sys, os
-import math
+from string import Template
+from optparse import OptionParser, IndentedHelpFormatter
+_script_path_ = os.path.dirname( os.path.realpath(__file__) )
 
 def chunks(l, n):
     n = max(1, n)
