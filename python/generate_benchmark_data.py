@@ -256,31 +256,31 @@ def run_docking_calc( energy_fxn, rosetta_exe_path, cluster_type, test_set, rest
     print "Initializing test: docking"
 
     # Setup path to test sets and executables
-    path_to_test = benchmark + "tests/test-docking"
+    inputs = benchmark + "inputs/test_3.2_docking"
     executable = rosetta_exe_path + "mp_dock" + "." + platform + compiler + buildenv
-    base_outdir = benchmark + "data/" + energy_fxn + "/test-docking"
+    base_outdir = benchmark + "data/" + energy_fxn + "/test_3.2_docking"
     os.system( "mkdir " + base_outdir )
 
-    list_of_test_cases = path_to_test + "/inputs/" + test_set + "/dimers.list" 
+    list_of_test_cases = inputs + "/" + test_set + "/dimers.list" 
     with open( list_of_test_cases, 'rb' ) as f: 
         test_cases = f.readlines()
     test_cases = [ x.strip() for x in test_cases ]
 
-    test_outdir = benchmark + "data/" + energy_fxn + "/test-docking/" + test_set
+    test_outdir = benchmark + "data/" + energy_fxn + "/test_3.2_docking/" + test_set
     os.system( "mkdir " + test01_outdir )
 
     # For each test case, generate specific arguments, job files, and then run
     for case in test_cases:
 
         # Make one directory per case
-        outdir = benchmark + "data/" + energy_fxn + "/test-docking/" + test_set + "/" + case
+        outdir = benchmark + "data/" + energy_fxn + "/test_3.2_docking/" + test_set + "/" + case
         os.system( "mkdir " + outdir )
         os.system( "cd " + outdir )
 
         # Setup arguments by substitution
-        native = path_to_test + "/inputs/" + test_set + "/" + case + "/" + case + "_AB_tr.pdb"
-        prepacked = path_to_test + "/inputs/" + test_set + "/" + case + "/" + case + "_AB_tr.prepack.pdb"
-        spanfile = path_to_test + "/inputs/" + test_set + "/" + case + "/" + case + "_AB.span"
+        native = inputs + "/" + test_set + "/" + case + "/" + case + "_AB_tr.pdb"
+        prepacked = inputs + "/" + test_set + "/" + case + "/" + case + "_AB_tr.prepack.pdb"
+        spanfile = inputs + "/" + test_set + "/" + case + "/" + case + "_AB.span"
         s = Template( " -in:file:s $prepacked -in:file:native $native -mp:setup:spanfiles $spanfile -score:weights $sfxn -run:multiple_processes_writing_to_one_directory -docking:partners A_B -docking:dock_pert 3 8 -packing:pack_missing_sidechains 0 -nstruct 1000 -out:path:all $outdir" )
         arguments = s.substitute( native=native, prepacked=prepacked, spanfile=spanfile, sfxn=energy_fxn, outdir=outdir )
         if ( restore == True ): 
@@ -500,13 +500,13 @@ def main( args ):
     if ( "prediction" in test_types ): 
 
         # Fixed backbone design calculation for sequence recovery test
-        run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
+        #run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
         # Docking calculation for small homodimer set (Lomize et al. 2017)
-        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
+        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
 
         # Docking calculation for large homodimer set (Alford & Koehler Leman 2015)
-        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", resotre )
+        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", restore )
 
         # This doesn't have a label on it - so I'm wondering if this is where I had left off... 
         #run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
