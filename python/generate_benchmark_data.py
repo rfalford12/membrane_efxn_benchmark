@@ -267,7 +267,7 @@ def run_docking_calc( energy_fxn, rosetta_exe_path, cluster_type, test_set, rest
     test_cases = [ x.strip() for x in test_cases ]
 
     test_outdir = benchmark + "data/" + energy_fxn + "/test_3.2_docking/" + test_set
-    os.system( "mkdir " + test01_outdir )
+    os.system( "mkdir " + test_outdir )
 
     # For each test case, generate specific arguments, job files, and then run
     for case in test_cases:
