@@ -14,21 +14,21 @@ _script_path_ = os.path.dirname( os.path.realpath(__file__) )
 
 ##############################################################################
 ### Global data for benchmark runs on Jazz
-#benchmark = "/home/ralford/membrane-efxn-benchmark/"
-#rosettadir = "/home/ralford/apps/Rosetta/main/source/bin/"
-#rosettadir_stable = "/home/ralford/apps/Rosetta-stable/main/source/bin/"
-#platform = "linux"
-#buildenv = "release"
-#compiler = "gcc"
+benchmark = "/home/ralford/membrane-efxn-benchmark/"
+rosettadir = "/home/ralford/apps/Rosetta/main/source/bin/"
+rosettadir_stable = "/home/ralford/apps/Rosetta-stable/main/source/bin/"
+platform = "linux"
+buildenv = "release"
+compiler = "gcc"
 
 ##############################################################################
 ### Global data for benchmark runs on MARCC
-benchmark = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/membrane_efxn_benchmark/"
-rosettadir = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta/main/source/bin/"
-rosettadir_stable = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta-stable/main/source/bin/"
-platform = "mpi.linux" 
-buildenv = "release"
-compiler = "gcc"
+#benchmark = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/membrane_efxn_benchmark/"
+#rosettadir = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta/main/source/bin/"
+#rosettadir_stable = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta-stable/main/source/bin/"
+#platform = "mpi.linux" 
+#buildenv = "release"
+#compiler = "gcc"
 ##############################################################################
 
 
