@@ -4,9 +4,8 @@
 # @notes: This script should **always** be run from the home membrane-efxn directory
 # @author: Rebecca F. Alford (ralford3@jhu.edu)
 
-## TODO: Add an option to toggle restore_talaris_behavior
 ## TODO: PH output needs to be put into separate folders otherwise the naming is ambiguous
-## TODO: Change teh paths to be compatible with this
+## TODO: Change the paths to be compatible with this
 
 import sys, os
 from string import Template
@@ -117,8 +116,8 @@ def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_
     print "Initializing energy landscape test for " + test_name
 
     # Read list of energy landscape test cases
-    path_to_test = benchmark + "tests/" + test_name 
-    list_of_test_cases = path_to_test + "/inputs/" + input_list 
+    path_to_test = benchmark + "inputs/" + test_name 
+    list_of_test_cases = path_to_test + "/" + input_list 
     with open( list_of_test_cases, 'rb' ) as f: 
         test_cases = f.readlines()
     test_cases = [ x.strip() for x in test_cases ]
@@ -311,7 +310,7 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
     ### Setup some general variables
     path_to_test = benchmark + "tests/test-decoy-discrimination"
     executable = rosetta_exe_path + "rosetta_scripts.linux" + compiler + buildenv
-    xml_script = path_to_test + "/mp_refinement.xml"
+    xml_script = benchmark + "xml/test_3.3_decoy_refinement.xml"
     base_outdir = benchmark + "data/" + energy_fxn + "/test-decoy-discrimination"
     os.system( "mkdir " + base_outdir)
 
@@ -461,25 +460,25 @@ def main( args ):
     if ( "landscape" in test_types ): 
     
         # Energy landscape test for single TM peptides found in nature
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.1_monomer_landscape", "helices.list", "monomer-landscape.xml", restore )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.1_monomer_landscape", "helices.list", "xml/test_1.1_monomer_landscape.xml", restore )
 
         # Energy landscape test for aromatic-capped peptides
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.2_aro_landscape", "aro_helices.list", "aro-landscape.xml", restore, "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.2_aro_landscape", "aro_helices.list", "xml/test_1.2_aro_landscape.xml", restore, "true" )
 
         # Energy landscape test for leucine-lysine peptides
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.3_lk_landscape", "lk_peptides.list", "lk-landscape.xml", restore, "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.3_lk_landscape", "lk_peptides.list", "xml/test_1.3_lk_landscape.xml", restore, "true" )
 
     # Run ddG calculations
     if ( "ddG" in test_types ): 
 
         # ddG of insertion landscape calculation for Ulmschneider set
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-ddG-of-insertion", "insertion_peptide.dat", "landscape.xml", restore, "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-ddG-of-insertion", "insertion_peptide.dat", "xml/test_2.2_ddG_insertion_landscape.xml", restore, "true" )
 
         # ddG of insertion landscape calculation for pH dependent set - generate at pH = 4
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-pH-dependent-insertion", "pH-inserted-helices.list", "pH-dependent-landscape.xml", restore, "true", "4" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-pH-dependent-insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, "true", "4" )
     
         # ddG of insertion landscape calculation for pH dependent set - generate at pH = 7
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-pH-dependent-insertion", "pH-inserted-helices.list", "pH-dependent-landscape.xml", restore, "true", "7" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-pH-dependent-insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, "true", "7" )
 
         # ddG of mutation calculation for Moon & Fleming Set
         run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA/OmpLA_Moon_Fleming_set.dat", "OmpLA_Moon_Fleming_set", restore )
