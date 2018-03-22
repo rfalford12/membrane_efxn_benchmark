@@ -42,7 +42,7 @@ def main( args ):
         decoys = [ x[-1] for x in decoys ]
 
     # divide the list into 50 chunks
-    subdivide = chunks( content, 50 )
+    subdivide = chunks( decoys, 50 )
 
     # Write the output files
     for i in xrange(1, 51): 
