@@ -96,8 +96,8 @@ def write_and_submit_slurm_batch_script( path, name, executable, arguments, num_
         f.close()
 
     # Run the slurm job file
-    sbatch_command = "sbatch " + filename
-    os.system( sbatch_command )
+    #sbatch_command = "sbatch " + filename
+    #os.system( sbatch_command )
 
 def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_name, input_list, xml_protocol, restore, single_TM="false", pH="0" ): 
     """
@@ -309,35 +309,37 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
     print "Initializing test: decoy-discrimination"
 
     ### Setup some general variables
-    path_to_test = benchmark + "tests/test-decoy-discrimination"
-    executable = rosetta_exe_path + "rosetta_scripts.linux" + compiler + buildenv
+    inputs = benchmark + "inputs/test_3.3_decoy_discrimination"
+    executable = rosetta_exe_path + "rosetta_scripts." + platform + compiler + buildenv
     xml_script = benchmark + "xml/test_3.3_decoy_refinement.xml"
-    base_outdir = benchmark + "data/" + energy_fxn + "/test-decoy-discrimination"
-    os.system( "mkdir " + base_outdir)
+
+    ### Make the base decoy discrimination output directory
+    base_outdir = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination"
+    os.system( "mkdir " + base_outdir )
 
     ### Test Set #1: Yarov-Yaravoy Low Resolution Decoys (Membrane ab initio generated)
-    list_of_test01_cases = path_to_test + "/inputs/yarov-yaravoy-set/decoy_sets.list"
+    list_of_test01_cases = inputs + "/yarov-yaravoy-set/decoy_sets.list"
     with open( list_of_test01_cases, 'rb' ) as f:
         test01_cases = f.readlines()
     test01_cases = [ x.strip() for x in test01_cases ]
 
-    outdir_test01 = benchmark + "data/" + energy_fxn + "/decoy-discrimination/yarov-yaravoy-set"
+    outdir_test01 = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/yarov-yaravoy-set"
     os.system( "mkdir " + outdir_test01 )
     os.chdir( outdir_test01 )
 
     # For each test case, generate specific arguments, condor_files, and then run
     for case in test01_cases:
 
-        outdir = benchmark + "data/" + energy_fxn + "/decoy-discrimination/yarov-yaravoy-set/" + case
+        outdir = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/yarov-yaravoy-set/" + case
         os.system( "mkdir " + outdir )
         os.system( "cd " + outdir )
 
         for i in range(1, 51):
 
             # Setup case-specific variables (pdbfile, spanfile, xmlargs)
-            native = path_to_test + "/inputs/yarov-yaravoy-set/" + case + "/" + case + "_native.pdb"
-            spanfile = path_to_test + "/inputs/yarov-yaravoy-set/" + case + "/" + case + ".span"
-            modelslist = path_to_test + "/inputs/yarov-yaravoy-set/" + case + "/models." + str(i) + ".list"
+            native = inputs + "/yarov-yaravoy-set/" + case + "/" + case + "_native.pdb"
+            spanfile = inputs + "/yarov-yaravoy-set/" + case + "/" + case + ".span"
+            modelslist = inputs + "/yarov-yaravoy-set/" + case + "/models." + str(i) + ".list"
             s = Template( "-overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
             arguments = s.substitute( modellist=modelslist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
             if ( restore == True ): 
@@ -353,26 +355,26 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
 
 
     ### Test Set #2: Dutagaci High Resolution Decoys (Molecular dynamics generated)
-    list_of_test02_cases = path_to_test + "/inputs/dutagaci-set/decoy_sets.list"
+    list_of_test02_cases = inputs + "/dutagaci-set/decoy_sets.list"
     with open( list_of_test02_cases, 'rb' ) as f:
         test02_cases = f.readlines()
     test02_cases = [ x.strip() for x in test02_cases ]
 
-    outdir_test02 = benchmark + "data/" + energy_fxn + "/decoy-discrimination/dutagaci-set"
+    outdir_test02 = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/dutagaci-set"
     os.system( "mkdir " + outdir_test02 )
     os.chdir( outdir_test02 )
 
     # For each test case, generate specific arguments, condor_files, and then run
     for case in test02_cases:
 
-        outdir = benchmark + "data/" + energy_fxn + "/decoy-discrimination/dutagaci-set/" + case
+        outdir = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/dutagaci-set/" + case
         os.system( "mkdir " + outdir )
         os.system( "cd " + outdir )
 
         # Setup case-specific variables (pdbfile, spanfile, xmlargs)
-        native = path_to_test + "/inputs/dutagaci-set/" + case + "/" + case + "_native.pdb"
-        spanfile = path_to_test + "/inputs/dutagaci-set/" + case + "/" + case + ".span"
-        modelslist = path_to_test + "/inputs/dutagaci-set/" + case + "/decoys.list"
+        native = inputs + "/dutagaci-set/" + case + "/" + case + "_native.pdb"
+        spanfile = inputs + "/dutagaci-set/" + case + "/" + case + ".span"
+        modelslist = inputs + "/dutagaci-set/" + case + "/decoys.list"
         s = Template( " -overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
         arguments = s.substitute( modellist=modelslist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
         if ( restore == True ): 
@@ -503,13 +505,12 @@ def main( args ):
         #run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
         # Docking calculation for small homodimer set (Lomize et al. 2017)
-        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
+        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
 
         # Docking calculation for large homodimer set (Alford & Koehler Leman 2015)
-        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", restore )
+        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", restore )
 
         # This doesn't have a label on it - so I'm wondering if this is where I had left off... 
-        #run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
-
+        run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
 if __name__ == "__main__" : main(sys.argv)
