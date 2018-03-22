@@ -171,15 +171,15 @@ def run_ddG_of_mutation_test( energy_fxn, list_of_ddGs, test_name, restore ):
     print "Initializing ddG-of-mutation test for set " + test_name
 
     # Specify path to test, setup new directories
-    path_to_test = benchmark + "tests/test-ddG-of-mutation"
-    outdir = benchmark + "data/" + energy_fxn + "/ddG-of-mutation"
+    path_to_test = benchmark + "inputs/test_2.1_ddG_of_mutation"
+    outdir = benchmark + "data/" + energy_fxn + "/test_2.1_ddG_of_mutation"
     os.system( "mkdir " + outdir )
     os.system( "cd " + outdir )
 
     # Specify path to python script and arguments
-    python_script = path_to_test + "/predict_ddG.py"
+    python_script = benchmark + "/python/test_2.1_predict_ddG.py"
     energy_function = energy_fxn
-    mlist = path_to_test + "/inputs/" + list_of_ddGs
+    mlist = path_to_test + "/" + list_of_ddGs
     s = Template( "--energy_fxn $energy_func --mutation_list $list_of_mutations --outdir  $outdir")
     arguments = s.substitute( energy_func=energy_function, list_of_mutations=mlist, outdir=outdir )
     if ( restore == True ): 
