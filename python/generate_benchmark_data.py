@@ -55,7 +55,7 @@ def write_and_submit_condor_script( path, name, executable, arguments, queue_no=
 def write_and_submit_slurm_batch_script( path, name, executable, arguments, num_nodes=1 ): 
 
     # Create a new sbatch file named for the job type and test
-    filename = path = "/" + name + ".sbatch" 
+    filename = path + "/" + name + ".sbatch" 
     with open( filename, 'w' ) as f: 
 
         # Write bash and comments
