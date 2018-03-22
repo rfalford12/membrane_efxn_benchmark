@@ -446,12 +446,18 @@ def main( args ):
     else: 
         rosetta_exe_path = rosettadir
 
-    # Set option for restoring talaris behavior
+    # Set option for restoring talaris behaviorrun_fixed
     restore = False
     if ( Options.restore_talaris == "true" ): 
         restore = True
 
-    # Make an output data directory
+    # If it doesn't exist, make the output data directory
+    datadir = benchmark + "data/"
+    if ( not os.path.isdir(datadir) ): 
+        os.system( "mkdir " + datadir )
+    os.system( "cd " + datadir )
+
+    # Make an output data directory for the specific energy function
     outdir = benchmark + "data/" + Options.energy_fxn
     if ( not os.path.isdir(outdir) ): 
         os.system( "mkdir " + outdir )
