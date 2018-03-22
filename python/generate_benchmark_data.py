@@ -202,8 +202,8 @@ def run_fixed_backbone_design_calc( energy_fxn, rosetta_exe_path, cluster_type, 
     print "Initializing fixed backbone design calculations for sequence recovery test" 
 
     # Read list of test cases - typically full length transmembrane proteins
-    path_to_test = benchmark + "tests/test-seq-recovery"
-    list_of_test_cases = path_to_test + "/inputs/monomer_chains.list" 
+    inputs = benchmark + "inputs/test_3.1_sequence_recovery"
+    list_of_test_cases = inputs + "/monomer_chains.list" 
     with open( list_of_test_cases, 'rb' ) as f:
         test_cases = f.readlines()
     test_cases = [ x.strip() for x in test_cases ]
@@ -212,7 +212,7 @@ def run_fixed_backbone_design_calc( energy_fxn, rosetta_exe_path, cluster_type, 
     executable = rosetta_exe_path + "fixbb." + platform + compiler + buildenv
 
     # Change directories into a data analysis dir
-    outdir = benchmark + "data/" + energy_fxn + "/" + test_name
+    outdir = benchmark + "data/" + energy_fxn + "/test_3.1_sequence_recovery"
     os.system( "mkdir " + outdir )
     os.chdir( outdir )
 
@@ -220,15 +220,17 @@ def run_fixed_backbone_design_calc( energy_fxn, rosetta_exe_path, cluster_type, 
     for case in test_cases:
 
         # Make one directory per case
-        outdir = benchmark + "data/" + energy_fxn + "/seq-recovery/" + case
+        outdir = benchmark + "data/" + energy_fxn + "/test_3.1_sequence_recovery/" + case
         os.system( "mkdir " + outdir )
         os.chdir( outdir )
 
         # Setup arguments by substitution
-        pdbfile = path_to_test + "/inputs/" + case + "/" + case + "_tr_ignorechain.pdb"
-        spanfile = path_to_test + "/inputs/" + case + "/" + case + "_tr.span"
+        pdbfile = inputs + "/" + case + "/" + case + "_tr_ignorechain.pdb"
+        spanfile = inputs + "/" + case + "/" + case + "_tr.span"
         s = Template( " -in:file:s $pdbfile -mp:setup:spanfiles $spanfile -score:weights $sfxn -in:membrane -out:path:all $outdir -in:file:load_PDB_components false -in:ignore_unrecognized_res" )
         arguments = s.substitute( pdbfile=pdbfile, spanfile=spanfile, sfxn=energy_fxn, outdir=outdir )
+        if ( restore == True ): 
+            arguments = arguments + " -restore_talaris_behavior"
 
         # Generate a condor submission file and submit the job to Jazz
         print "Submitting fixed backbone design calculation for sequence recovery case:", case
@@ -238,7 +240,6 @@ def run_fixed_backbone_design_calc( energy_fxn, rosetta_exe_path, cluster_type, 
             queue_no = 1
             high_mem = True 
             write_and_submit_condor_script( outdir, case, executable, arguments, queue_no, high_mem )
-
 
 def run_docking_calc( energy_fxn, rosetta_exe_path, cluster_type, test_set, restore ): 
     """
