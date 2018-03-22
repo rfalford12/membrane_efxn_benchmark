@@ -42,14 +42,14 @@ def main( args ):
         decoys = [ x[-1] for x in decoys ]
 
     # divide the list into 50 chunks
-    subdivide = chunks( decoys, 50 )
-
+    subdivide = list(chunks( decoys, 50 ))
+    
     # Write the output files
     for i in xrange(1, 51): 
         outfile = "models." + str(i) + ".list" 
         with open( outfile, 'a' ) as f: 
             for item in subdivide[i]: 
-                f.write( Options.path + item + "\n" )
+                f.write( Options.path + "/" + item + "\n" )
             f.close()
 
 if __name__ == "__main__" : main(sys.argv)
