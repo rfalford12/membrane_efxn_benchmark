@@ -448,7 +448,7 @@ def main( args ):
 
     # Set option for restoring talaris behavior
     restore = False
-    if ( Option.restore_talaris == "true" ): 
+    if ( Options.restore_talaris == "true" ): 
         restore = True
 
     # Make an output data directory
