@@ -84,7 +84,6 @@ def write_and_submit_slurm_batch_script( path, name, executable, arguments, num_
         # Soecify required modules
         f.write( "module unload openmpi\n" )
         f.write( "module load intel-mpi\n" )
-        f.write( "module load ")
 
         # Provide a description of the job
         f.write( "ROSETTAEXE=" + executable + "\n" )
