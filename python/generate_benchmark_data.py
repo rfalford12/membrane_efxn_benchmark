@@ -82,15 +82,10 @@ def write_and_submit_slurm_batch_script( path, name, jobfile, num_nodes=1 ):
         f.write( "\n" )
 
         # Soecify required modules
-<<<<<<< HEAD
         f.write( "module unload openmpi gcc\n" )
         f.write( "module load intel-mpi git\n" )
         f.write( "ml --gcc\n")
         f.write( "ml gcc/4.8.2\n")
-=======
-        f.write( "module unload openmpi\n" )
-        f.write( "module load intel-mpi\n" )
->>>>>>> 4e135d94b5c4f35f769c89f177e6c596b1f84008
 
         # Provide a description of the job
         f.write(  "echo Starting MPI job running " + jobfile "\n" )
@@ -104,7 +99,7 @@ def write_and_submit_slurm_batch_script( path, name, jobfile, num_nodes=1 ):
 
     # Run the slurm job file
     sbatch_command = "sbatch " + filename
-    os.system( sbatch_command )
+    #os.system( sbatch_command )
 
 def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_name, input_list, xml_protocol, restore, single_TM="false", pH="0" ): 
     """
@@ -552,12 +547,12 @@ def main( args ):
         run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
         # Docking calculation for small homodimer set (Lomize et al. 2017)
-        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
+        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
 
         # Docking calculation for large homodimer set (Alford & Koehler Leman 2015)
-        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", restore )
+        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", restore )
 
         # This doesn't have a label on it - so I'm wondering if this is where I had left off... 
-        run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
+        #run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
 if __name__ == "__main__" : main(sys.argv)
