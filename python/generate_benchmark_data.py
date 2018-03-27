@@ -14,7 +14,7 @@ _script_path_ = os.path.dirname( os.path.realpath(__file__) )
 
 ##############################################################################
 ### Global data for benchmark runs on Jazz
-benchmark = "/home/ralford/membrane-efxn-benchmark/"
+benchmark = "/home/ralford/membrane_efxn_benchmark/"
 rosettadir = "/home/ralford/apps/Rosetta/main/source/bin/"
 rosettadir_stable = "/home/ralford/apps/Rosetta-stable/main/source/bin/"
 platform = "linux"
@@ -50,9 +50,9 @@ def write_and_submit_condor_script( path, name, executable, arguments, queue_no=
         f.write( "Queue " + str(queue_no) + "\n" )
 
     # Run the condor file
-    #os.system( "condor_submit " + filename )
+    os.system( "condor_submit " + filename )
 
-def write_and_submit_slurm_batch_script( path, name, executable, arguments, num_nodes=1 ): 
+def write_and_submit_slurm_batch_script( path, name, jobfile, num_nodes=1 ): 
 
     # Create a new sbatch file named for the job type and test
     filename = path + "/" + name + ".sbatch" 
@@ -82,16 +82,18 @@ def write_and_submit_slurm_batch_script( path, name, executable, arguments, num_
         f.write( "\n" )
 
         # Soecify required modules
-        f.write( "module unload openmpi\n" )
-        f.write( "module load intel-mpi\n" )
-        f.write( "module load ")
+        f.write( "module unload openmpi gcc\n" )
+        f.write( "module load intel-mpi git\n" )
+        f.write( "ml --gcc\n")
+        f.write( "ml gcc/4.8.2\n")
 
         # Provide a description of the job
-        f.write( "ROSETTAEXE=" + executable + "\n" )
-        f.write(  "echo Starting MPI job running $ROSETTAEXE\n" )
+        f.write(  "echo Starting MPI job running " + jobfile "\n" )
 
         # Run the job
-        f.write( "mpirun $EXE " + arguments + "\n" )
+        f.write( "time\n" )
+        f.write( "mpirun ./" + jobfile + "\n" )
+        f.write( "time\n" )
 
         f.close()
 
@@ -124,7 +126,7 @@ def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_
 
     # Generate path to executable
     executable = rosetta_exe_path + "rosetta_scripts" + "." + platform + compiler + buildenv
-    xml_script =  benchmark + "/" + xml_protocol
+    xml_script =  benchmark + xml_protocol
 
     # Change directories to a data analysis dir
     outdir = benchmark + "data/" + energy_fxn + "/" + test_name
@@ -151,10 +153,18 @@ def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_
         if ( restore == True ): 
             arguments = arguments + " -restore_talaris_behavior"
 
+        # Write arguments and executable to a separate file
+        jobfile = outdir + "/" + case + "_seqrecov.sh"
+        with open( jobfile, 'a' ) as f: 
+            f.write( "#!/bin/bash\n" )
+            f.write( executable + " " + arguments + "\n" )
+            f.close()
+        os.system( "chmod +x " + jobfile )
+
         # Generate a condor submission file and submit the job to Jazz
         print "Submitting test case for " + test_name + ": " +  case
         if ( cluster_type == "SLURM" ): 
-            write_and_submit_slurm_batch_script( outdir, case, executable, arguments, )
+            write_and_submit_slurm_batch_script( outdir, case, jobfile )
         else: 
             write_and_submit_condor_script( outdir, case, executable, arguments )
 
@@ -232,10 +242,18 @@ def run_fixed_backbone_design_calc( energy_fxn, rosetta_exe_path, cluster_type, 
         if ( restore == True ): 
             arguments = arguments + " -restore_talaris_behavior"
 
+        # Write arguments and executable to a separate file
+        jobfile = outdir + "/" + case + "_seqrecov.sh"
+        with open( jobfile, 'a' ) as f: 
+            f.write( "#!/bin/bash\n" )
+            f.write( executable + " " + arguments + "\n" )
+            f.close()
+        os.system( "chmod +x " + jobfile )
+
         # Generate a condor submission file and submit the job to Jazz
         print "Submitting fixed backbone design calculation for sequence recovery case:", case
         if ( cluster_type == "SLURM" ): 
-            write_and_submit_slurm_batch_script( outdir, case, executable, arguments )
+            write_and_submit_slurm_batch_script( outdir, case, jobfile )
         else: 
             queue_no = 1
             high_mem = True 
@@ -287,10 +305,18 @@ def run_docking_calc( energy_fxn, rosetta_exe_path, cluster_type, test_set, rest
         if ( restore == True ): 
             arguments = arguments + " -restore_talaris_behavior"
 
+        # Write arguments and executable to a separate file
+        jobfile = outdir + "/" + case + "_seqrecov.sh"
+        with open( jobfile, 'a' ) as f: 
+            f.write( "#!/bin/bash\n" )
+            f.write( executable + " " + arguments + "\n" )
+            f.close()
+        os.system( "chmod +x " + jobfile )
+
         # Generate job submission file and then submit to cluster
         print "Submitting docking test case from set " + test_set + ":", case
         if ( cluster_type == "SLURM" ): 
-            write_and_submit_slurm_batch_script( outdir, case, executable, arguments, str(10) )
+            write_and_submit_slurm_batch_script( outdir, case, jobfile, str(10) )
         else: 
             queue_no = 300
             write_and_submit_condor_script( outdir, case, executable, arguments, str(queue_no) )
@@ -345,11 +371,19 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
             if ( restore == True ): 
                 arguments = arguments + " -restore_talaris_behavior"
 
+            # Write arguments and executable to a separate file
+            jobfile = outdir + "/" + case + "_seqrecov.sh"
+            with open( jobfile, 'a' ) as f: 
+                f.write( "#!/bin/bash\n" )
+                f.write( executable + " " + arguments + "\n" )
+                f.close()
+            os.system( "chmod +x " + jobfile )
+
             # Generate a condor submission file and submit the job to Jazz
             condor_case_name = case + "_models_" + str(i)
             print "Submitting decoy-discrimination test case from Yarov-Yaravoy set:", condor_case_name
             if ( cluster_type == "SLURM" ): 
-                write_and_submit_slurm_batch_script( outdir, condor_case_name, executable, arguments )
+                write_and_submit_slurm_batch_script( outdir, condor_case_name, jobfile )
             else: 
                 write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
 
@@ -380,11 +414,19 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
         if ( restore == True ): 
             arguments = arguments + " -restore_talaris_behavior"
 
+        # Write arguments and executable to a separate file
+        jobfile = outdir + "/" + case + "_seqrecov.sh"
+        with open( jobfile, 'a' ) as f: 
+            f.write( "#!/bin/bash\n" )
+            f.write( executable + " " + arguments + "\n" )
+            f.close()
+        os.system( "chmod +x " + jobfile )
+
         # Generate a condor submission file and submit the job to Jazz
         condor_case_name = case + "_dutagaci"
         print "Submitting decoy-discrimination test case from Dutagaci set:", condor_case_name
         if ( cluster_type == "SLURM" ): 
-            write_and_submit_slurm_batch_script( outdir, condor_case_name, executable, arguments )
+            write_and_submit_slurm_batch_script( outdir, condor_case_name, jobfile )
         else: 
             write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
 
