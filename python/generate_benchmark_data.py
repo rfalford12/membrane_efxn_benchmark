@@ -14,21 +14,21 @@ _script_path_ = os.path.dirname( os.path.realpath(__file__) )
 
 ##############################################################################
 ### Global data for benchmark runs on Jazz
-benchmark = "/home/ralford/membrane_efxn_benchmark/"
-rosettadir = "/home/ralford/apps/Rosetta/main/source/bin/"
-rosettadir_stable = "/home/ralford/apps/Rosetta-stable/main/source/bin/"
-platform = "linux"
-buildenv = "release"
-compiler = "gcc"
+#benchmark = "/home/ralford/membrane_efxn_benchmark/"
+#rosettadir = "/home/ralford/apps/Rosetta/main/source/bin/"
+#rosettadir_stable = "/home/ralford/apps/Rosetta-stable/main/source/bin/"
+#platform = "linux"
+#buildenv = "release"
+#compiler = "gcc"
 
 ##############################################################################
 ### Global data for benchmark runs on MARCC
-#benchmark = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/membrane_efxn_benchmark/"
-#rosettadir = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta/main/source/bin/"
-#rosettadir_stable = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta-stable/main/source/bin/"
-#platform = "mpi.linux" 
-#buildenv = "release"
-#compiler = "gcc"
+benchmark = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/membrane_efxn_benchmark/"
+rosettadir = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta/main/source/bin/"
+rosettadir_stable = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta-stable/main/source/bin/"
+platform = "mpi.linux" 
+buildenv = "release"
+compiler = "gcc"
 ##############################################################################
 
 
@@ -88,7 +88,7 @@ def write_and_submit_slurm_batch_script( path, name, jobfile, num_nodes=1 ):
         f.write( "ml gcc/4.8.2\n")
 
         # Provide a description of the job
-        f.write(  "echo Starting MPI job running " + jobfile "\n" )
+        f.write(  "echo Starting MPI job running " + jobfile + "\n" )
 
         # Run the job
         f.write( "time\n" )
