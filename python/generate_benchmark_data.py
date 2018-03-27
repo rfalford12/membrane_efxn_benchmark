@@ -82,10 +82,15 @@ def write_and_submit_slurm_batch_script( path, name, jobfile, num_nodes=1 ):
         f.write( "\n" )
 
         # Soecify required modules
+<<<<<<< HEAD
         f.write( "module unload openmpi gcc\n" )
         f.write( "module load intel-mpi git\n" )
         f.write( "ml --gcc\n")
         f.write( "ml gcc/4.8.2\n")
+=======
+        f.write( "module unload openmpi\n" )
+        f.write( "module load intel-mpi\n" )
+>>>>>>> 4e135d94b5c4f35f769c89f177e6c596b1f84008
 
         # Provide a description of the job
         f.write(  "echo Starting MPI job running " + jobfile "\n" )
