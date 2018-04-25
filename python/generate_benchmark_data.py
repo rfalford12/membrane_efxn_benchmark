@@ -8,29 +8,29 @@
 ## TODO: Change the paths to be compatible with this
 
 import sys, os
+import random
 from string import Template
 from optparse import OptionParser, IndentedHelpFormatter
 _script_path_ = os.path.dirname( os.path.realpath(__file__) )
 
 ##############################################################################
 ### Global data for benchmark runs on Jazz
-#benchmark = "/home/ralford/membrane_efxn_benchmark/"
-#rosettadir = "/home/ralford/apps/Rosetta/main/source/bin/"
-#rosettadir_stable = "/home/ralford/apps/Rosetta-stable/main/source/bin/"
-#platform = "linux"
-#buildenv = "release"
-#compiler = "gcc"
+benchmark = "/home/ralford/membrane_efxn_benchmark/"
+rosettadir = "/home/ralford/apps/Rosetta/main/source/bin/"
+rosettadir_stable = "/home/ralford/apps/Rosetta-stable/main/source/bin/"
+platform = "linux"
+buildenv = "release"
+compiler = "gcc"
 
 ##############################################################################
 ### Global data for benchmark runs on MARCC
-benchmark = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/membrane_efxn_benchmark/"
-rosettadir = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta/main/source/bin/"
-rosettadir_stable = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta-stable/main/source/bin/"
-platform = "mpi.linux" 
-buildenv = "release"
-compiler = "gcc"
+# benchmark = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/membrane_efxn_benchmark/"
+# rosettadir = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta/main/source/bin/"
+# rosettadir_stable = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/Rosetta-stable/main/source/bin/"
+# platform = "mpi.linux" 
+# buildenv = "release"
+# compiler = "gcc"
 ##############################################################################
-
 
 def write_and_submit_condor_script( path, name, executable, arguments, queue_no=1, high_mem=False ):
 
@@ -360,57 +360,29 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
         os.system( "mkdir " + outdir )
         os.system( "cd " + outdir )
 
-        for i in range(1, 51):
+        # Select 100 random decoys of the set of 5000
+        decoy_selection = random.sample(range(1,5000), 100)
+        decoy_selection = [ str(x).zfill(4) for x in decoy_selection ]
 
-            # Setup case-specific variables (pdbfile, spanfile, xmlargs)
-            native = inputs + "/yarov-yaravoy-set/" + case + "/" + case + "_native.pdb"
-            spanfile = inputs + "/yarov-yaravoy-set/" + case + "/" + case + ".span"
-            modelslist = inputs + "/yarov-yaravoy-set/" + case + "/models." + str(i) + ".list"
-            s = Template( "-overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
-            arguments = s.substitute( modellist=modelslist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
-            if ( restore == True ): 
-                arguments = arguments + " -restore_talaris_behavior"
+        # Open a file to determine the prefix
+        prefixfile = inputs + "/yarov-yaravoy-set/" + case + "/prefix.txt"
+        with open( prefixfile, 'rb' ) as f: 
+            contents = f.readlines()
+        prefix = contents[0].strip()
 
-            # Write arguments and executable to a separate file
-            jobfile = outdir + "/" + case + "_seqrecov.sh"
-            with open( jobfile, 'a' ) as f: 
-                f.write( "#!/bin/bash\n" )
-                f.write( executable + " " + arguments + "\n" )
-                f.close()
-            os.system( "chmod +x " + jobfile )
-
-            # Generate a condor submission file and submit the job to Jazz
-            condor_case_name = case + "_models_" + str(i)
-            print "Submitting decoy-discrimination test case from Yarov-Yaravoy set:", condor_case_name
-            if ( cluster_type == "SLURM" ): 
-                write_and_submit_slurm_batch_script( outdir, condor_case_name, jobfile )
-            else: 
-                write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
-
-
-    ### Test Set #2: Dutagaci High Resolution Decoys (Molecular dynamics generated)
-    list_of_test02_cases = inputs + "/dutagaci-set/decoy_sets.list"
-    with open( list_of_test02_cases, 'rb' ) as f:
-        test02_cases = f.readlines()
-    test02_cases = [ x.strip() for x in test02_cases ]
-
-    outdir_test02 = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/dutagaci-set"
-    os.system( "mkdir " + outdir_test02 )
-    os.chdir( outdir_test02 )
-
-    # For each test case, generate specific arguments, condor_files, and then run
-    for case in test02_cases:
-
-        outdir = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/dutagaci-set/" + case
-        os.system( "mkdir " + outdir )
-        os.system( "cd " + outdir )
+        # Make a list of PDBs to refine
+        pdblist = outdir + "/random_models.list"
+        with open( pdblist, 'w' ) as f: 
+            for decoy in decoy_selection: 
+                pdb = inputs + "/yarov-yaravoy-set/" + case + "/" + prefix + decoy + ".pdb"
+                f.write( pdb + "\n" )
+            f.close()
 
         # Setup case-specific variables (pdbfile, spanfile, xmlargs)
-        native = inputs + "/dutagaci-set/" + case + "/" + case + "_native.pdb"
-        spanfile = inputs + "/dutagaci-set/" + case + "/" + case + ".span"
-        modelslist = inputs + "/dutagaci-set/" + case + "/decoys.list"
-        s = Template( " -overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
-        arguments = s.substitute( modellist=modelslist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
+        native = inputs + "/yarov-yaravoy-set/" + case + "/" + case + "_native.pdb"
+        spanfile = inputs + "/yarov-yaravoy-set/" + case + "/" + case + ".span"
+        s = Template( "-overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
+        arguments = s.substitute( modellist=pdblist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
         if ( restore == True ): 
             arguments = arguments + " -restore_talaris_behavior"
 
@@ -423,12 +395,55 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
         os.system( "chmod +x " + jobfile )
 
         # Generate a condor submission file and submit the job to Jazz
-        condor_case_name = case + "_dutagaci"
-        print "Submitting decoy-discrimination test case from Dutagaci set:", condor_case_name
+        condor_case_name = case + "_decoy_disc"
+        print "Submitting decoy-discrimination test case from Yarov-Yaravoy set:", condor_case_name
         if ( cluster_type == "SLURM" ): 
             write_and_submit_slurm_batch_script( outdir, condor_case_name, jobfile )
         else: 
             write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
+
+
+    ### Test Set #2: Dutagaci High Resolution Decoys (Molecular dynamics generated)
+    # list_of_test02_cases = inputs + "/dutagaci-set/decoy_sets.list"
+    # with open( list_of_test02_cases, 'rb' ) as f:
+    #     test02_cases = f.readlines()
+    # test02_cases = [ x.strip() for x in test02_cases ]
+
+    # outdir_test02 = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/dutagaci-set"
+    # os.system( "mkdir " + outdir_test02 )
+    # os.chdir( outdir_test02 )
+
+    # # For each test case, generate specific arguments, condor_files, and then run
+    # for case in test02_cases:
+
+    #     outdir = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/dutagaci-set/" + case
+    #     os.system( "mkdir " + outdir )
+    #     os.system( "cd " + outdir )
+
+    #     # Setup case-specific variables (pdbfile, spanfile, xmlargs)
+    #     native = inputs + "/dutagaci-set/" + case + "/" + case + "_native.pdb"
+    #     spanfile = inputs + "/dutagaci-set/" + case + "/" + case + ".span"
+    #     modelslist = inputs + "/dutagaci-set/" + case + "/decoys.list"
+    #     s = Template( " -overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
+    #     arguments = s.substitute( modellist=modelslist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
+    #     if ( restore == True ): 
+    #         arguments = arguments + " -restore_talaris_behavior"
+
+    #     # Write arguments and executable to a separate file
+    #     jobfile = outdir + "/" + case + "_seqrecov.sh"
+    #     with open( jobfile, 'a' ) as f: 
+    #         f.write( "#!/bin/bash\n" )
+    #         f.write( executable + " " + arguments + "\n" )
+    #         f.close()
+    #     os.system( "chmod +x " + jobfile )
+
+    #     # Generate a condor submission file and submit the job to Jazz
+    #     condor_case_name = case + "_dutagaci"
+    #     print "Submitting decoy-discrimination test case from Dutagaci set:", condor_case_name
+    #     if ( cluster_type == "SLURM" ): 
+    #         write_and_submit_slurm_batch_script( outdir, condor_case_name, jobfile )
+    #     else: 
+    #         write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
 
 def main( args ):
 
@@ -544,15 +559,15 @@ def main( args ):
     if ( "prediction" in test_types ): 
 
         # Fixed backbone design calculation for sequence recovery test
-        run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
+        #run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
         # Docking calculation for small homodimer set (Lomize et al. 2017)
-        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
+        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
 
         # Docking calculation for large homodimer set (Alford & Koehler Leman 2015)
-        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", restore )
+        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", restore )
 
         # This doesn't have a label on it - so I'm wondering if this is where I had left off... 
-        #run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
+        run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
 if __name__ == "__main__" : main(sys.argv)

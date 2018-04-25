@@ -77,14 +77,12 @@ def process_decoy_discrimination_results( energy_fxn ):
 
         # First, use Rosetta to rescore every single PDB relative to the native
         # Assuming a non-ref energy function for now
-        # executable = rosettadir + "score_jd2.linux" + compiler + buildenv
-        # models_list = outdir + "/refined_list"
-        # native = path_to_test + "/inputs/" + case + "/" + case + "_native.pdb"
-        # spanfile = path_to_test + "/inputs/" + case + "/" + case + ".span"
+        # 
+
         # output_sc = outdir + "/" + case + "_rescored.sc"
         # os.system( "ls -d " + outdir + "/*_0001.pdb > " + models_list )
         # r = Template( " -overwrite -in:file:l $refined_list -in:file:native $native -in:membrane -mp:setup:spanfiles $spanfile -out:file:scorefile $output_sc -score:weights $energy_fxn" )
-        # arguments0 = r.substitute( refined_list=models_list, native=native, spanfile=spanfile, output_sc=output_sc, energy_fxn=energy_fxn )
+        # 
         # write_and_submit_condor_script( outdir, case + "_" + energy_fxn, executable, arguments0, 1 )
 
         # os.system( executable + arguments0 )
@@ -104,47 +102,6 @@ def process_decoy_discrimination_results( energy_fxn ):
         output_discfile = outdir + "/" + case + ".disc"
         t = Template( " -terms rms total_score -abinitio_scorefile $refined_sc > $refined_disc" )
         arguments2 = t.substitute( refined_sc=output_path, refined_disc=output_discfile )
-        os.system( "python " + scoring_script + arguments2 )
-
-def process_docking_results( energy_fxn ):
-
-    print "Processing docking results generated with the energy function", energy_fxn
-
-    # Read list of TM homo- and heter-dimer docking cases
-    path_to_test = benchmark + "tests/validation/test-docking"
-    list_of_test_cases = path_to_test + "/inputs/dimers.list"
-    with open( list_of_test_cases, 'rb' ) as f:
-        test_cases = f.readlines()
-    test_cases = [ x.strip() for x in test_cases ]
-
-    # Change directories into a data analysis dir
-    outdir = "/home/ralford/membrane-efxn-benchmark/data/" + energy_fxn + "/docking"
-    os.chdir( outdir )
-
-    # For each test case, generate specific arguments, condor files, and then run
-    for case in test_cases:
-
-        print "Estimating decoy discrimination for", case
-
-        # Change into the docking/case directory
-        outdir = "/home/ralford/membrane-efxn-benchmark/data/" + energy_fxn + "/docking/" + case
-        os.chdir( outdir )
-
-        # Specify paths to old and new scorefiles
-        input_path = outdir + "/score.sc"
-        output_path = outdir + "/" + case + "_score.sc"
-
-        # Parse each scorefile to exclude incomplete lines
-        # python_script = path_to_test + "/parse_scorefile.py"
-        # s = Template( " --num_elements 40 --input $input --output $output" )
-        # arguments1 = s.substitute( input=input_path, output=output_path )
-        # os.system( "python " + python_script + arguments1 )
-
-        # Run decoy discrimination on each parsed scorefile (here, its by Irms and I_sc)
-        scoring_script = boincdir + "score_energy_landscape.py"
-        output_discfile = outdir + "/" + case + ".disc"
-        t = Template( " -terms Irms I_sc -abinitio_scorefile $docking_sc > $docking_disc" )
-        arguments2 = t.substitute( docking_sc=output_path, docking_disc=output_discfile )
         os.system( "python " + scoring_script + arguments2 )
 
 def process_seq_recovery_results( energy_fxn ):
