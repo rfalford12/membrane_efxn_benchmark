@@ -404,46 +404,46 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
 
 
     ### Test Set #2: Dutagaci High Resolution Decoys (Molecular dynamics generated)
-    # list_of_test02_cases = inputs + "/dutagaci-set/decoy_sets.list"
-    # with open( list_of_test02_cases, 'rb' ) as f:
-    #     test02_cases = f.readlines()
-    # test02_cases = [ x.strip() for x in test02_cases ]
+    list_of_test02_cases = inputs + "/dutagaci-set/decoy_sets.list"
+    with open( list_of_test02_cases, 'rb' ) as f:
+        test02_cases = f.readlines()
+    test02_cases = [ x.strip() for x in test02_cases ]
 
-    # outdir_test02 = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/dutagaci-set"
-    # os.system( "mkdir " + outdir_test02 )
-    # os.chdir( outdir_test02 )
+    outdir_test02 = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/dutagaci-set"
+    os.system( "mkdir " + outdir_test02 )
+    os.chdir( outdir_test02 )
 
-    # # For each test case, generate specific arguments, condor_files, and then run
-    # for case in test02_cases:
+    # For each test case, generate specific arguments, condor_files, and then run
+    for case in test02_cases:
 
-    #     outdir = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/dutagaci-set/" + case
-    #     os.system( "mkdir " + outdir )
-    #     os.system( "cd " + outdir )
+        outdir = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/dutagaci-set/" + case
+        os.system( "mkdir " + outdir )
+        os.system( "cd " + outdir )
 
-    #     # Setup case-specific variables (pdbfile, spanfile, xmlargs)
-    #     native = inputs + "/dutagaci-set/" + case + "/" + case + "_native.pdb"
-    #     spanfile = inputs + "/dutagaci-set/" + case + "/" + case + ".span"
-    #     modelslist = inputs + "/dutagaci-set/" + case + "/decoys.list"
-    #     s = Template( " -overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
-    #     arguments = s.substitute( modellist=modelslist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
-    #     if ( restore == True ): 
-    #         arguments = arguments + " -restore_talaris_behavior"
+        # Setup case-specific variables (pdbfile, spanfile, xmlargs)
+        native = inputs + "/dutagaci-set/" + case + "/" + case + "_native.pdb"
+        spanfile = inputs + "/dutagaci-set/" + case + "/" + case + ".span"
+        modelslist = inputs + "/dutagaci-set/" + case + "/decoys.list"
+        s = Template( " -overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
+        arguments = s.substitute( modellist=modelslist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
+        if ( restore == True ): 
+            arguments = arguments + " -restore_talaris_behavior"
 
-    #     # Write arguments and executable to a separate file
-    #     jobfile = outdir + "/" + case + "_seqrecov.sh"
-    #     with open( jobfile, 'a' ) as f: 
-    #         f.write( "#!/bin/bash\n" )
-    #         f.write( executable + " " + arguments + "\n" )
-    #         f.close()
-    #     os.system( "chmod +x " + jobfile )
+        # Write arguments and executable to a separate file
+        jobfile = outdir + "/" + case + "_seqrecov.sh"
+        with open( jobfile, 'a' ) as f: 
+            f.write( "#!/bin/bash\n" )
+            f.write( executable + " " + arguments + "\n" )
+            f.close()
+        os.system( "chmod +x " + jobfile )
 
-    #     # Generate a condor submission file and submit the job to Jazz
-    #     condor_case_name = case + "_dutagaci"
-    #     print "Submitting decoy-discrimination test case from Dutagaci set:", condor_case_name
-    #     if ( cluster_type == "SLURM" ): 
-    #         write_and_submit_slurm_batch_script( outdir, condor_case_name, jobfile )
-    #     else: 
-    #         write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
+        # Generate a condor submission file and submit the job to Jazz
+        condor_case_name = case + "_dutagaci"
+        print "Submitting decoy-discrimination test case from Dutagaci set:", condor_case_name
+        if ( cluster_type == "SLURM" ): 
+            write_and_submit_slurm_batch_script( outdir, condor_case_name, jobfile )
+        else: 
+            write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
 
 def main( args ):
 
@@ -562,10 +562,10 @@ def main( args ):
         #run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
         # Docking calculation for small homodimer set (Lomize et al. 2017)
-        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
+        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
 
         # Docking calculation for large homodimer set (Alford & Koehler Leman 2015)
-        run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", restore )
+        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", restore )
 
         # This doesn't have a label on it - so I'm wondering if this is where I had left off... 
         run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
