@@ -168,7 +168,7 @@ def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_
         else: 
             write_and_submit_condor_script( outdir, case, executable, arguments )
 
-def run_ddG_of_mutation_test( energy_fxn, list_of_ddGs, test_name, restore ): 
+def run_ddG_of_mutation_calc( energy_fxn, list_of_ddGs, test_name, restore ): 
     """
     A general function for calculating the ddG of single point mutations
 
@@ -190,10 +190,10 @@ def run_ddG_of_mutation_test( energy_fxn, list_of_ddGs, test_name, restore ):
     python_script = benchmark + "/python/test_2.1_predict_ddG.py"
     energy_function = energy_fxn
     mlist = path_to_test + "/" + list_of_ddGs
-    s = Template( "--energy_fxn $energy_func --mutation_list $list_of_mutations --outdir  $outdir")
+    s = Template( "--energy_fxn $energy_func --mutation_list $list_of_mutations --outdir  $outdir ")
     arguments = s.substitute( energy_func=energy_function, list_of_mutations=mlist, outdir=outdir )
-    if ( restore == True ): 
-        arguments = arguments + " --restore"
+    if ( restore == "true" ): 
+        arguments = arguments + " --restore True"
 
     print "Submitting ddG of mutation test case " + test_name
     os.system( "python " + python_script + " " + arguments )
@@ -537,26 +537,27 @@ def main( args ):
     # Run ddG calculations
     if ( "ddG" in test_types ): 
 
-        # ddG of insertion landscape calculation for Ulmschneider set
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-ddG-of-insertion", "insertion_peptide.dat", "xml/test_2.2_ddG_insertion_landscape.xml", restore, "true" )
-
-        # ddG of insertion landscape calculation for pH dependent set - generate at pH = 4
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-pH-dependent-insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, "true", "4" )
-    
-        # ddG of insertion landscape calculation for pH dependent set - generate at pH = 7
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test-pH-dependent-insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, "true", "7" )
-
         # ddG of mutation calculation for Moon & Fleming Set
-        run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA/OmpLA_Moon_Fleming_set.dat", "OmpLA_Moon_Fleming_set", restore )
+        #run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA/OmpLA_Moon_Fleming_set.dat", "OmpLA_Moon_Fleming_set", restore )
 
         # ddG of mutation calculation for McDonald & Fleming Set
-        run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA_aro/OmpLA_aro_McDonald_Fleming_set.dat", "OmpLA_aro_McDonald_Fleming_set", restore )
+        #run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA_aro/OmpLA_aro_McDonald_Fleming_set.dat", "OmpLA_aro_McDonald_Fleming_set", restore )
 
         # ddG of mutation calculation for Marx & Fleming set
-        run_ddG_of_mutation_calc( Options.energy_fxn, "PagP/PagP_Marx_Fleming_set.dat", "PagP_Marx_Fleming_set", restore )
+        #run_ddG_of_mutation_calc( Options.energy_fxn, "PagP/PagP_Marx_Fleming_set.dat", "PagP_Marx_Fleming_set", restore )
+
+        # ddG of insertion landscape calculation for Ulmschneider set
+        #run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.2_ddG_of_insertion", "insertion_peptide.dat", "xml/test_2.2_ddG_insertion_landscape.xml", restore, "true" )
+
+        # ddG of insertion landscape calculation for pH dependent set - generate at pH = 4
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.3_pH_dependent_insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, "true", "4" )
+    
+        # ddG of insertion landscape calculation for pH dependent set - generate at pH = 7
+        #run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.3_pH_dependent_insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, "true", "7" )
 
     # Run prediction calculations
     if ( "prediction" in test_types ): 
+    	print "hello"
 
         # Fixed backbone design calculation for sequence recovery test
         #run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
@@ -568,6 +569,6 @@ def main( args ):
         #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", restore )
 
         # This doesn't have a label on it - so I'm wondering if this is where I had left off... 
-        run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
+        #run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
 if __name__ == "__main__" : main(sys.argv)
