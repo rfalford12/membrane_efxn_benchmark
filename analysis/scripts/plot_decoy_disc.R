@@ -18,11 +18,66 @@ decoy.disc.plot <- ggplot( data = combined.df, aes( x = efxn, y = SampledRMS, fi
   geom_boxplot() + 
   scale_x_discrete( "" ) + 
   scale_y_continuous( "Max RMS for Lowest Scoring 2%", limits = c(0,20), expand = c(0,0) ) + 
-  #theme( legend.position = "none" ) + 
+  theme( legend.position = "none" ) + 
   background_grid() + 
   scale_alpha_manual( values = c( 1, 0.4 ) ) + 
-  scale_fill_manual( values = c( "#1b9e77", "#d95f02", "#7570b3" ) )
+  scale_fill_manual( values = c( "#F8766D", "#619CFF", "#00BA38" ) )
 print(decoy.disc.plot)
 
-save_plot( "~/Desktop/decoydisc.png", decoy.disc.plot, units = "in", base_width = 7.25, base_height = 4 )
+# Pull and compare examples from the large and small set
+df.yy.m07 <- read.table( paste(dir, "vatp_yaravoy_refined_models_m07.sc", sep = "/" ), header = T)
+df.yy.m12 <- read.table( paste(dir, "vatp_yaravoy_refined_models_m12.sc", sep = "/" ), header = T)
+df.yy.r15 <- read.table( paste(dir, "vatp_yaravoy_refined_models_r15.sc", sep = "/" ), header = T)
+
+funnel.yy.m07.plot <- ggplot() +   
+  geom_point( data = df.yy.m07, aes( x = rms, y = total_score ), color = "#F8766D", size = 0.4 ) + 
+  scale_x_continuous( "RMS (Å)", expand = c(0,0), limits = c(0, 10) ) + 
+  scale_y_continuous( "Total Score", expand = c(0,0) ) + 
+  background_grid()
+
+funnel.yy.m12.plot <- ggplot() +   
+  geom_point( data = df.yy.m12, aes( x = rms, y = total_score ), color = "#619CFF", size = 0.4 ) + 
+  scale_x_continuous( "RMS (Å)", expand = c(0,0), limits = c(0, 10) ) + 
+  scale_y_continuous( "Total Score", expand = c(0,0) ) + 
+  background_grid()
+
+funnel.yy.r15.plot <- ggplot() +   
+  geom_point( data = df.yy.r15, aes( x = rms, y = total_score ), color = "#00BA38", size = 0.4 ) + 
+  scale_x_continuous( "RMS (Å)", expand = c(0,0), limits = c(0, 10) ) + 
+  scale_y_continuous( "Total Score", expand = c(0,0) ) + 
+  background_grid()
+
+subplot1 <- plot_grid( funnel.yy.m07.plot, funnel.yy.m12.plot, funnel.yy.r15.plot, ncol = 1, nrow = 3 )
+print(subplot1)
+
+df.du.m07 <- read.table( paste(dir, "vatp_dutagaci_refined_models_m07.sc", sep = "/"), header = T )
+df.du.m12 <- read.table( paste(dir, "vatp_dutagaci_refined_models_m12.sc", sep = "/"), header = T )
+df.du.r15 <- read.table( paste(dir, "vatp_dutagaci_refined_models_r15.sc", sep = "/"), header = T )
+
+funnel.du.m07.plot <- ggplot() +   
+  geom_point( data = df.du.m07, aes( x = rms, y = total_score ), color = "#F8766D", size = 0.4 ) + 
+  scale_x_continuous( "RMS (Å)", expand = c(0,0), limits = c(0, 10) ) + 
+  scale_y_continuous( "Total Score", expand = c(0,0)) + 
+  background_grid()
+
+funnel.du.m12.plot <- ggplot() +   
+  geom_point( data = df.du.m12, aes( x = rms, y = total_score ), color = "#619CFF", size = 0.4 ) + 
+  scale_x_continuous( "RMS (Å)", expand = c(0,0), limits = c(0, 10) ) + 
+  scale_y_continuous( "Total Score", expand = c(0,0) ) + 
+  background_grid()
+
+funnel.du.r15.plot <- ggplot() +   
+  geom_point( data = df.du.r15, aes( x = rms, y = total_score ), color = "#00BA38", size = 0.4 ) + 
+  scale_x_continuous( "RMS (Å)", expand = c(0,0), limits = c(0, 10) ) + 
+  scale_y_continuous( "Total Score", expand = c(0,0) ) + 
+  background_grid()
+
+subplot2 <- plot_grid( funnel.du.m07.plot, funnel.du.m12.plot, funnel.du.r15.plot, ncol = 1, nrow = 3 )
+print(subplot2)
+
+subplot <- plot_grid( subplot2, subplot1, ncol = 2, nrow = 1 )
+composite.plot <- plot_grid( decoy.disc.plot, subplot, ncol = 2, nrow = 1 )
+print(composite.plot)
+save_plot( "~/Desktop/decoy_discrimination.tiff", composite.plot, units = "in", base_width = 9, base_height = 4.25 )
+
 
