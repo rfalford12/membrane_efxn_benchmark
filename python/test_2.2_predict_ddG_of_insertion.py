@@ -15,62 +15,28 @@ _script_path_ = os.path.dirname( os.path.realpath(__file__) )
 def main( args ):
 
     # Read options from the commandline
-    parser = OptionParser( usage="usage: %prog --rscript landscape.xml --pdb test.pdb --span span.pdb --energy_fxn mpframework_fa_2007" )
+    parser = OptionParser( usage="usage: %prog" )
     parser.set_description(main.__doc__)
 
-    parser.add_option('--rosettaexe', '-r',
-        action="store",
-        help="Path to Rosetta executable", )
+    parser.add_option('--infile', '-i', 
+        action="store", 
+        help="Input energy landscape file",)
 
-    parser.add_option('--rscript', '-t',
-        action="store",
-        help="Rosetta script used to perform grid search calculations",)
-
-    parser.add_option('--pdb', '-i',
-        action="store",
-        help="PDB file containing coordinates for peptide",)
-
-    parser.add_option('--energy_fxn', '-e',
-        action="store",
-        help="Energy function to use",)
+    parser.add_option('--case', '-c', 
+        action="store", 
+        help="Name of test case",)
 
     parser.add_option('--outfile', '-o',
         action="store",
-        help="Output file containing ddg data"
-    )
+        help="Output file containing ddg data",)
 
     (options, args) = parser.parse_args(args=args[1:])
     global Options
     Options = options
 
-    if ( not Options.pdb or not Options.energy_fxn ):
-        print "Missing required option --pdb or --energy_fxn! Exiting..."
-        sys.exit()
-
-    if ( not Options.rscript ):
-        print "Missing required path to grid search Rosetta script"
-        sys.exit()
-
-    # Make a directory for case-specific data
-    casestr = Options.pdb.split("/")[-1]
-    case = casestr[:-4]
-    outdir = "/home/ralford/membrane-efxn-benchmark/data/" + Options.energy_fxn + "/ddG-of-insertion/" + case
-    os.system( "mkdir " + outdir )
-    os.chdir( outdir )
-
-    # Execute C++ task from this python script
-    xml_script = Options.rscript
-    s = Template( " -overwrite -parser:script_vars sfxn_weights=$sfxn_weights -parser:protocol $rscript -in:file:s $pdb -mp:setup:spanfiles single_TM_mode -out:path:all $outdir" )
-    arguments = s.substitute( rscript=xml_script, pdb=Options.pdb, sfxn_weights=Options.energy_fxn, outdir=outdir )
-    os.system( Options.rosettaexe + " " + arguments )
-
-    # Check that the output file is present
-    if ( not os.path.isfile( outdir + "/" +  case + "_" + Options.energy_fxn + "_landscape.dat" ) ):
-        print "Energy landscpae calculations did not complete! Exiting..."
-        sys.exit()
-
     # Read file into 3D data structure
-    landscapefile = outdir + "/" + case + "_" + Options.energy_fxn + "_landscape.dat"
+    landscapefile = Options.infile
+    case = Options.case
     with open( landscapefile, 'r' ) as f:
         content = f.readlines()
     content = [ x.strip() for x in content ]
