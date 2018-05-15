@@ -148,7 +148,7 @@ def main( args ):
 
     # Setup output file
     outfile = Options.outdir + "/ddG_" + Options.energy_fxn + ".dat"
-    f = open( outfile, 'w' )
+    f = open( outfile, 'a' )
     f.write( "Nat Pos Mut experimental_ddG predicted_ddG class depth\n" )
 
     for entry in mutation_list:
