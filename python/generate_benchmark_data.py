@@ -547,7 +547,7 @@ def main( args ):
         #run_ddG_of_mutation_calc( Options.energy_fxn, "PagP/PagP_Marx_Fleming_set.dat", "PagP_Marx_Fleming_set", restore )
 
         # ddG of insertion landscape calculation for Ulmschneider set
-        #run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.2_ddG_of_insertion", "insertion_peptide.dat", "xml/test_2.2_ddG_insertion_landscape.xml", restore, "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.2_ddG_of_insertion", "insertion_peptide.dat", "xml/test_2.2_ddG_insertion_landscape.xml", restore, "true" )
 
         # ddG of insertion landscape calculation for pH dependent set - generate at pH = 4
         run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.3_pH_dependent_insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, "true", "4" )
