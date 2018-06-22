@@ -11,3 +11,7 @@ core	0.369	m07
 lipid	0.288	m07
 interface	0.252	m07
 aqueous	0.245	m07
+core	0.334	ref2015_wtbe
+lipid	0.275	ref2015_wtbe
+interface	0.229	ref2015_wtbe
+aqueous	0.192	ref2015_wtbe
