@@ -31,7 +31,7 @@ _script_path_ = os.path.dirname( os.path.realpath(__file__) )
 # compiler = "gcc"
 ##############################################################################
 ### Global data for benchmark runs on XSEDE-stampede2
-benchmark = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/membrane_efxn_benchmark/"
+benchmark = "/work/04819/ralford3/membrane_efxn_benchmark/"
 rosettadir = "/work/04819/ralford3/Rosetta-stable/main/source/bin/"
 rosettadir_stable = "/work/04819/ralford3/Rosetta-stable/main/source/bin/"
 platform = "mpi.linux" 
