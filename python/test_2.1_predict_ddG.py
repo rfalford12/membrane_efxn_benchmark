@@ -110,7 +110,6 @@ def main( args ):
         action="store", 
         help="Restore talaris behavior to pre-ref2015 for refernce benchmarks",)
 
-
     # parse arguments
     (options, args) = parser.parse_args(args=args[1:])
     global Options
@@ -127,8 +126,8 @@ def main( args ):
 
     # Initialize Pyrosetta with const options
     option_string = "-run:constant_seed -in:ignore_unrecognized_res"
-    if ( Options.restore ): 
-        option_string = option_string + " -restore_talaris_behavior"
+    #if ( Options.restore ): 
+    #option_string = option_string + " -restore_talaris_behavior true"
     init( extra_options = option_string )
 
     # Read database file including mutations (space delimited)
@@ -143,8 +142,8 @@ def main( args ):
 
     # Set the repack radius from the option system
     repack_radius = 8.0
-    if ( Options.repack_radius ):
-        repack_radius = float( repack_radius )
+    # if ( Options.repack_radius ):
+    #     repack_radius = float( repack_radius )
 
     # Setup output file
     outfile = Options.outdir + "/ddG_" + Options.energy_fxn + ".dat"
