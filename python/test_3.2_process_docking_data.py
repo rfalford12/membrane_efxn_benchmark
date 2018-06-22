@@ -40,34 +40,34 @@ def process_docking_results( benchmark, energy_fxn ):
     outdir = benchmark + "data/" + energy_fxn + "/test_3.2_docking/"
     os.chdir( outdir )
 
-    # # Process the small homodimer dataset
-    # small_homodimers_list = benchmark + "inputs/test_3.2_docking/small-homodimer-set/dimers.list"
-    # with open( small_homodimers_list, 'rb' ) as f: 
-    #     small_homodimers = f.readlines()
-    #     small_homodimers = [ x.strip() for x in small_homodimers ]
+    # Process the small homodimer dataset
+    small_homodimers_list = benchmark + "inputs/test_3.2_docking/small-homodimer-set/dimers.list"
+    with open( small_homodimers_list, 'rb' ) as f: 
+        small_homodimers = f.readlines()
+        small_homodimers = [ x.strip() for x in small_homodimers ]
     
-    # for case in small_homodimers: 
+    for case in small_homodimers: 
 
-    #     print "Estimating decoy discrimination for small homodimer case", case
+        print "Estimating decoy discrimination for small homodimer case", case
 
-    #     # Make a path for the homodimer case
-    #     casedir = outdir + "small-homodimer-set/" + case 
-    #     os.chdir( casedir )
+        # Make a path for the homodimer case
+        casedir = outdir + "small-homodimer-set/" + case 
+        os.chdir( casedir )
 
-    #     # Parse each scorefile to exclude incomplete lines
-    #     input_path = casedir + "/score.sc"
-    #     if ( os.path.isfile( input_path ) ): 
-    #         output_path = casedir + "/" + case + "_score.sc"
-    #         exclude_incompletely_scored_decoys( input_path, output_path )
+        # Parse each scorefile to exclude incomplete lines
+        input_path = casedir + "/score.sc"
+        if ( os.path.isfile( input_path ) ): 
+            output_path = casedir + "/" + case + "_score.sc"
+            exclude_incompletely_scored_decoys( input_path, output_path )
 
-    #         # Run decoy discrimination on each parsed scorefile (here, its by Irms and I_sc)
-    #         scoring_script = boincdir + "score_energy_landscape.py"
-    #         output_discfile = casedir + "/" + case + ".disc"
-    #         t = Template( " -terms Irms I_sc -abinitio_scorefile $docking_sc > $docking_disc" )
-    #         arguments2 = t.substitute( docking_sc=output_path, docking_disc=output_discfile )
-    #         os.system( "python " + scoring_script + arguments2 )
-    #     else: 
-    #         "Skipping this case: ", case
+            # Run decoy discrimination on each parsed scorefile (here, its by Irms and I_sc)
+            scoring_script = boincdir + "score_energy_landscape.py"
+            output_discfile = casedir + "/" + case + ".disc"
+            t = Template( " -terms Irms I_sc -abinitio_scorefile $docking_sc > $docking_disc" )
+            arguments2 = t.substitute( docking_sc=output_path, docking_disc=output_discfile )
+            os.system( "python " + scoring_script + arguments2 )
+        else: 
+            "Skipping this case: ", case
 
     # Now repeat for the large homodimer dataset
     large_homodimers_list = benchmark + "inputs/test_3.2_docking/large-homodimer-set/dimers.list"
