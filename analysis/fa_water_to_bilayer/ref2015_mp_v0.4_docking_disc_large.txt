@@ -1,0 +1,8 @@
+SampledRMS	PNear	WeightedRMS	calcbinnedboltz.pl	tyka_discrimination.py
+1.664	0.562191261706	1.51778595073	0.342480208723627	-0.1636
+SampledRMS	PNear	WeightedRMS	calcbinnedboltz.pl	tyka_discrimination.py
+1.018	0.719237878063	1.14804243301	0.717796358123985	-0.4294
+SampledRMS	PNear	WeightedRMS	calcbinnedboltz.pl	tyka_discrimination.py
+1.39	0.663149878212	1.28179853379	0.640210878493141	-0.4153
+SampledRMS	PNear	WeightedRMS	calcbinnedboltz.pl	tyka_discrimination.py
+1.02	0.754717034133	1.05970382533	0.639173851341064	-0.4403
