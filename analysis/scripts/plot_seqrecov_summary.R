@@ -12,7 +12,8 @@ p <- ggplot( data = overview.df, aes( x = subset, y = recovery, fill = efxn) ) +
   scale_x_discrete( "", expand = c(0,0) ) + 
   scale_y_continuous( "% Recovered", expand = c(0,0), limits = c(0, 0.5) ) + 
   theme( legend.position = "none" ) + 
-  scale_fill_manual( values = c( "#F8766D", "#619CFF", "#00BA38" ) ) + 
+  scale_fill_brewer( palette = "Set1" ) + 
+  #  scale_fill_manual( values = c( "#F8766D", "#619CFF", "#00BA38" ) ) + 
   background_grid()
 print(p)
 
