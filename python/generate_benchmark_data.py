@@ -75,18 +75,18 @@ def write_and_submit_stampede2_slurm_script( path, name, jobfile, num_nodes=1 ):
         f.write( "\n" )
 
         # Write the job information
-        f.write( "#SBATCH --J" + name + "\n" )
-        f.write( "#SBATCH --p normal\n" )
-        f.write( "#SBATCH --n " + str(num_nodes) + "\n" )
-        f.write( "#SBATCH --t 24:0:0\n" )
-        f.write( "#SBATCH --mem=120GB\n" )
+        f.write( "#SBATCH -J " + name + "\n" )
+        f.write( "#SBATCH -p normal\n" )
+        f.write( "#SBATCH -N " + str(num_nodes) + "\n" )
+        f.write( "#SBATCH -n 8\n" )
+        f.write( "#SBATCH -t 24:0:0\n" )
 
         # Write job specific output and reporting information
-        f.write( "#SBATCH --o " + path + "/" + name + ".%j.out\n" )
-        f.write( "#SBATCH --e " + path + "/" + name + ".%j.err\n" )
+        f.write( "#SBATCH -o " + path + "/" + name + ".%j.out\n" )
+        f.write( "#SBATCH -e " + path + "/" + name + ".%j.err\n" )
         f.write( "#SBATCH --mail-user=rfalford12@gmail.com\n" )
         f.write( "#SBATCH --mail-type=ALL\n" )
-        f.write( "$SBATCH --A TG-MCB180056\n" )
+        f.write( "#SBATCH -A TG-MCB180056\n" )
         f.write( "\n" )
 
         # Specify required modules
@@ -98,7 +98,7 @@ def write_and_submit_stampede2_slurm_script( path, name, jobfile, num_nodes=1 ):
 
         # Run the job
         f.write( "time\n" )
-        f.write( "ibrun ./" + jobfile + "\n" )
+        f.write( "mpiexec bash " + jobfile + "\n" )
         f.write( "time\n" )
 
         f.close()
