@@ -78,7 +78,7 @@ def write_and_submit_stampede2_slurm_script( path, name, jobfile, num_nodes=1 ):
         f.write( "#SBATCH -J " + name + "\n" )
         f.write( "#SBATCH -p normal\n" )
         f.write( "#SBATCH -N " + str(num_nodes) + "\n" )
-        f.write( "#SBATCH -n 8\n" )
+        f.write( "#SBATCH -n 16\n" )
         f.write( "#SBATCH -t 24:0:0\n" )
 
         # Write job specific output and reporting information
@@ -105,7 +105,7 @@ def write_and_submit_stampede2_slurm_script( path, name, jobfile, num_nodes=1 ):
 
     # Run the slurm job file
     sbatch_command = "sbatch " + filename
-    #os.system( sbatch_command )
+    os.system( sbatch_command )
 
 
 def write_and_submit_slurm_batch_script( path, name, jobfile, num_nodes=1 ): 
@@ -626,7 +626,7 @@ def main( args ):
     	print "hello"
 
         # Fixed backbone design calculation for sequence recovery test
-        run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
+        #run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
         # Docking calculation for small homodimer set (Lomize et al. 2017)
         run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
