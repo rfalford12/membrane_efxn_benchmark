@@ -1,4 +1,3 @@
-SEQUENCE: 
 SCORE: total_score dslf_fa13    fa_atr    fa_dun   fa_elec fa_intra_rep fa_intra_sol_xover4              fa_rep              fa_sol fa_water_to_bilayer hbond_bb_sc hbond_lr_bb    hbond_sc hbond_sr_bb lk_ball_wtd       omega     p_aa_pp pro_close rama_prepro         ref yhh_planarity description 
 SCORE:    -506.108     0.000  -803.916   111.995  -231.001        1.701              15.992             106.003             481.128            -179.307      -6.152      -1.182      -1.908    -107.429     -25.260      12.363     -13.784     1.348       6.133     127.157         0.011 a1VATP1485_0001
 SCORE:    -518.221     0.000  -806.597   107.897  -244.360        1.745              15.343              98.411             513.488            -181.446      -1.974      -1.042      -1.642    -121.507     -23.429      12.002     -14.107     1.160       0.662     127.157         0.017 a1VATP4471_0001
