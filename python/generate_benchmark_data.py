@@ -15,13 +15,12 @@ _script_path_ = os.path.dirname( os.path.realpath(__file__) )
 
 ##############################################################################
 ### Global data for benchmark runs on Jazz
-benchmark = "/home/ralford/membrane_efxn_benchmark/"
-rosettadir = "/home/ralford/apps/Rosetta/main/source/bin/"
-rosettadir_stable = "/home/ralford/apps/Rosetta-stable/main/source/bin/"
-platform = "linux"
-buildenv = "release"
-compiler = "gcc"
-
+# benchmark = "/Users/ralford/membrane_efxn_benchmark/"
+# rosettadir = "/Users/ralford/apps/Rosetta/main/source/bin/"
+# rosettadir_stable = "/Users/ralford/apps/Rosetta-stable/main/source/bin/"
+# platform = "macos"
+# buildenv = "release"
+# compiler = "clang"
 ##############################################################################
 ### Global data for benchmark runs on MARCC
 # benchmark = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/membrane_efxn_benchmark/"
@@ -30,6 +29,14 @@ compiler = "gcc"
 # platform = "mpi.linux" 
 # buildenv = "release"
 # compiler = "gcc"
+##############################################################################
+### Global data for benchmark runs on XSEDE-stampede2
+benchmark = "/work/04819/ralford3/membrane_efxn_benchmark/"
+rosettadir = "/work/04819/ralford3/Rosetta-stable/main/source/bin/"
+rosettadir_stable = "/work/04819/ralford3/Rosetta-stable/main/source/bin/"
+platform = "mpi.linux" 
+buildenv = "release"
+compiler = "icc"
 ##############################################################################
 
 def write_and_submit_condor_script( path, name, executable, arguments, queue_no=1, high_mem=False ):
@@ -51,6 +58,55 @@ def write_and_submit_condor_script( path, name, executable, arguments, queue_no=
 
     # Run the condor file
     os.system( "condor_submit " + filename )
+
+def write_and_submit_stampede2_slurm_script( path, name, jobfile, num_nodes=1 ): 
+  
+    # Create a new sbatch file named for the job type and test
+    filename = path + "/" + name + ".sbatch" 
+    with open( filename, 'w' ) as f: 
+
+        # Write bash and comments
+        f.write( "#!/bin/bash -l\n" )
+        f.write ( "\n" )
+        f.write( "#----------------------------------------------------\n" )
+        f.write( "# SLURM job script for membrane force field benchmarking applications\n" )
+        f.write( "# Runs on Stampede2 with MPI applications\n" )
+        f.write( "#----------------------------------------------------\n" )
+        f.write( "\n" )
+
+        # Write the job information
+        f.write( "#SBATCH -J " + name + "\n" )
+        f.write( "#SBATCH -p normal\n" )
+        f.write( "#SBATCH -N " + str(num_nodes) + "\n" )
+        f.write( "#SBATCH -n 16\n" )
+        f.write( "#SBATCH -t 24:0:0\n" )
+
+        # Write job specific output and reporting information
+        f.write( "#SBATCH -o " + path + "/" + name + ".%j.out\n" )
+        f.write( "#SBATCH -e " + path + "/" + name + ".%j.err\n" )
+        f.write( "#SBATCH --mail-user=rfalford12@gmail.com\n" )
+        f.write( "#SBATCH --mail-type=ALL\n" )
+        f.write( "#SBATCH -A TG-MCB180056\n" )
+        f.write( "\n" )
+
+        # Specify required modules
+        f.write( "module load intel/18.0.0\n" )
+        f.write( "export MKL_MIC_ENABLE=1\n" )
+
+        # Provide a description of the job
+        f.write(  "echo Starting MPI job running " + jobfile + "\n" )
+
+        # Run the job
+        f.write( "time\n" )
+        f.write( "mpiexec bash " + jobfile + "\n" )
+        f.write( "time\n" )
+
+        f.close()
+
+    # Run the slurm job file
+    sbatch_command = "sbatch " + filename
+    os.system( sbatch_command )
+
 
 def write_and_submit_slurm_batch_script( path, name, jobfile, num_nodes=1 ): 
 
@@ -99,7 +155,7 @@ def write_and_submit_slurm_batch_script( path, name, jobfile, num_nodes=1 ):
 
     # Run the slurm job file
     sbatch_command = "sbatch " + filename
-    os.system( sbatch_command )
+    #os.system( sbatch_command )
 
 def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_name, input_list, xml_protocol, restore, single_TM="false", pH="0" ): 
     """
@@ -163,8 +219,10 @@ def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_
 
         # Generate a condor submission file and submit the job to Jazz
         print "Submitting test case for " + test_name + ": " +  case
-        if ( cluster_type == "SLURM" ): 
+        if ( cluster_type == "MARCC" ): 
             write_and_submit_slurm_batch_script( outdir, case, jobfile )
+        elif ( cluster_type == "STAMPEDE" ): 
+            write_and_submit_stampede2_slurm_script( outdir, case, jobfile )
         else: 
             write_and_submit_condor_script( outdir, case, executable, arguments )
 
@@ -252,8 +310,10 @@ def run_fixed_backbone_design_calc( energy_fxn, rosetta_exe_path, cluster_type, 
 
         # Generate a condor submission file and submit the job to Jazz
         print "Submitting fixed backbone design calculation for sequence recovery case:", case
-        if ( cluster_type == "SLURM" ): 
+        if ( cluster_type == "MARCC" ): 
             write_and_submit_slurm_batch_script( outdir, case, jobfile )
+        elif ( cluster_type == "STAMPEDE" ): 
+            write_and_submit_stampede2_slurm_script( outdir, case, jobfile )
         else: 
             queue_no = 1
             high_mem = True 
@@ -315,8 +375,10 @@ def run_docking_calc( energy_fxn, rosetta_exe_path, cluster_type, test_set, rest
 
         # Generate job submission file and then submit to cluster
         print "Submitting docking test case from set " + test_set + ":", case
-        if ( cluster_type == "SLURM" ): 
+        if ( cluster_type == "MARCC" ): 
             write_and_submit_slurm_batch_script( outdir, case, jobfile, str(10) )
+        elif ( cluster_type == "STAMPEDE" ): 
+            write_and_submit_stampede2_slurm_script( outdir, case, jobfile )
         else: 
             queue_no = 300
             write_and_submit_condor_script( outdir, case, executable, arguments, str(queue_no) )
@@ -397,8 +459,10 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
         # Generate a condor submission file and submit the job to Jazz
         condor_case_name = case + "_decoy_disc"
         print "Submitting decoy-discrimination test case from Yarov-Yaravoy set:", condor_case_name
-        if ( cluster_type == "SLURM" ): 
+        if ( cluster_type == "MARCC" ): 
             write_and_submit_slurm_batch_script( outdir, condor_case_name, jobfile )
+        elif ( cluster_type == "STAMPEDE" ): 
+            write_and_submit_stampede2_slurm_script( outdir, condor_case_name, jobfile )
         else: 
             write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
 
@@ -440,8 +504,10 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
         # Generate a condor submission file and submit the job to Jazz
         condor_case_name = case + "_dutagaci"
         print "Submitting decoy-discrimination test case from Dutagaci set:", condor_case_name
-        if ( cluster_type == "SLURM" ): 
+        if ( cluster_type == "MARCC" ): 
             write_and_submit_slurm_batch_script( outdir, condor_case_name, jobfile )
+        elif ( cluster_type == "STAMPEDE" ): 
+            write_and_submit_stampede2_slurm_script( outdir, condor_case_name, jobfile )
         else: 
             write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
 
@@ -480,8 +546,8 @@ def main( args ):
         print "Missing required options --energy_fxn, --stable, and/or --cluster_type! Exiting..."
         sys.exit()
 
-    if ( ( not Options.cluster_type == "SLURM" ) and ( not Options.cluster_type == "CONDOR" ) ): 
-        print "Invalid option for --cluster_type. Currently only supporting SLURM or CONDOR" 
+    if ( ( not Options.cluster_type == "MARCC" ) and ( not Options.cluster_type == "CONDOR" ) and ( not Options.cluster_type == "STAMPEDE") ): 
+        print "Invalid option for --cluster_type. Currently only supporting STAMPEDE, MARCC, or CONDOR" 
         sys.exit()
 
     test_types = []
@@ -560,7 +626,7 @@ def main( args ):
     	print "hello"
 
         # Fixed backbone design calculation for sequence recovery test
-        run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
+        #run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
         # Docking calculation for small homodimer set (Lomize et al. 2017)
         run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
