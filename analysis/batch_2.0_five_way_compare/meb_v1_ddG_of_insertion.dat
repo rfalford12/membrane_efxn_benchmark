@@ -1,0 +1,6 @@
+case	non_inserted_score	lowest_zcoord	lowest_angle	lowest_score	ddG_from_lowest	inserted_zcoord	inserted_angle	inserted_score	ddG_from_inserted	efxn	exp
+GL5	-21.383	17.9407	92	-25.7522	-4.3692	-0.0593042	0	-18.1922	3.1908	meb	2.1
+GL6	-25.2789	6.64299	193	-30.2805	-5.0016	-0.357013	0	-27.2563	-1.9774	meb	0.5
+GL7	-28.9253	-17.4192	270	-36.2259	-7.3006	-0.419224	0	-31.2112	-2.2859	meb	-0.5
+GL8	-37.4852	-2.21358	5	-45.4828	-7.9976	-0.213583	0	-45.1413	-7.6561	meb	-1.5
+GWL6	-26.434	8.31902	310	-30.1939	-3.7599	0.319017	0	-29.883	-3.449	meb	-0.5
