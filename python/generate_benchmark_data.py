@@ -15,12 +15,12 @@ _script_path_ = os.path.dirname( os.path.realpath(__file__) )
 
 ##############################################################################
 ### Global data for benchmark runs on Jazz
-benchmark = "/Users/ralford/membrane_efxn_benchmark/"
-rosettadir = "/Users/ralford/apps/Rosetta/main/source/bin/"
-rosettadir_stable = "/Users/ralford/apps/Rosetta-stable/main/source/bin/"
-platform = "macos"
+benchmark = "/home/ralford/membrane_efxn_benchmark/"
+rosettadir = "/home/ralford/apps/Rosetta/main/source/bin/"
+rosettadir_stable = "/home/ralford/apps/Rosetta-stable/main/source/bin/"
+platform = "linux"
 buildenv = "release"
-compiler = "clang"
+compiler = "gcc"
 ##############################################################################
 ### Global data for benchmark runs on MARCC
 # benchmark = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/membrane_efxn_benchmark/"
