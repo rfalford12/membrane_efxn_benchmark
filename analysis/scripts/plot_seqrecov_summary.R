@@ -4,7 +4,7 @@
 
 library(cowplot)
 
-dir <- "/Volumes/ralford/membrane_efxn_benchmark/analysis/batch_2.0_four_way_compare"
+dir <- "/Users/ralford/research/membrane_efxn_benchmark/analysis/batch_2.0_five_way_compare/seq-recov"
 overview.df <- read.table( paste( dir, "seqrecov_overview.txt", sep = "/" ), header = T )
 
 p <- ggplot( data = overview.df, aes( x = subset, y = recovery, fill = efxn ) ) + 
@@ -15,4 +15,4 @@ p <- ggplot( data = overview.df, aes( x = subset, y = recovery, fill = efxn ) ) 
   scale_fill_brewer( palette = "Pastel1", "Method")
 print(p)
 
-save_plot( "~/Desktop/sequence_recovery.tiff", p, units = "in", base_width = 5, base_height = 3 )
+save_plot( "~/Desktop/sequence_recovery.tiff", p, units = "in", base_width = 6, base_height = 3 )

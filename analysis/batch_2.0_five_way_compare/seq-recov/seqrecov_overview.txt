@@ -11,7 +11,12 @@ core	0.369	m07
 lipid	0.288	m07
 interface	0.252	m07
 aqueous	0.245	m07
-core	0.390	memb2018
-lipid	0.300	memb2018
-interface	0.279	memb2018
-aqueous	0.289	memb2018
+core	0.390	memb2018_v2
+lipid	0.300	memb2018_v2
+interface	0.279	memb2018_v2
+aqueous	0.289	memb2018_v2
+core 0.388 memb2018_v1
+lipid 0.301 memb2018_v1
+interface 0.278 memb2018_v1
+aqueous 0.288 memb2018_v1
+

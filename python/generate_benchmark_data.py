@@ -15,12 +15,12 @@ _script_path_ = os.path.dirname( os.path.realpath(__file__) )
 
 ##############################################################################
 ### Global data for benchmark runs on Jazz
-# benchmark = "/Users/ralford/membrane_efxn_benchmark/"
-# rosettadir = "/Users/ralford/apps/Rosetta/main/source/bin/"
-# rosettadir_stable = "/Users/ralford/apps/Rosetta-stable/main/source/bin/"
-# platform = "macos"
-# buildenv = "release"
-# compiler = "clang"
+benchmark = "/Users/ralford/membrane_efxn_benchmark/"
+rosettadir = "/Users/ralford/apps/Rosetta/main/source/bin/"
+rosettadir_stable = "/Users/ralford/apps/Rosetta-stable/main/source/bin/"
+platform = "macos"
+buildenv = "release"
+compiler = "clang"
 ##############################################################################
 ### Global data for benchmark runs on MARCC
 # benchmark = "/home-4/ralford3@jhu.edu/work/ralford3@jhu.edu/membrane_efxn_benchmark/"
@@ -31,12 +31,12 @@ _script_path_ = os.path.dirname( os.path.realpath(__file__) )
 # compiler = "gcc"
 ##############################################################################
 ### Global data for benchmark runs on XSEDE-stampede2
-benchmark = "/work/04819/ralford3/membrane_efxn_benchmark/"
-rosettadir = "/work/04819/ralford3/Rosetta-stable/main/source/bin/"
-rosettadir_stable = "/work/04819/ralford3/Rosetta-stable/main/source/bin/"
-platform = "mpi.linux" 
-buildenv = "release"
-compiler = "icc"
+# benchmark = "/work/04819/ralford3/membrane_efxn_benchmark/"
+# rosettadir = "/work/04819/ralford3/Rosetta-stable/main/source/bin/"
+# rosettadir_stable = "/work/04819/ralford3/Rosetta-stable/main/source/bin/"
+# platform = "mpi.linux" 
+# buildenv = "release"
+# compiler = "icc"
 ##############################################################################
 
 def write_and_submit_condor_script( path, name, executable, arguments, queue_no=1, high_mem=False ):
@@ -623,10 +623,9 @@ def main( args ):
 
     # Run prediction calculations
     if ( "prediction" in test_types ): 
-    	print "hello"
 
         # Fixed backbone design calculation for sequence recovery test
-        #run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
+        run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
         # Docking calculation for small homodimer set (Lomize et al. 2017)
         run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
