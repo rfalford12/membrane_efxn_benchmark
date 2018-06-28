@@ -9,8 +9,8 @@ from optparse import OptionParser, IndentedHelpFormatter
 _script_path_ = os.path.dirname( os.path.realpath(__file__) )
 
 ### Global Data ###
-boincdir = "/home/ralford/apps/Rosetta/bakerlab_scripts/boinc/"
-benchmark = "/home/ralford/membrane_efxn_benchmark/"
+boincdir = "/Volumes/ralford/apps/Rosetta/bakerlab_scripts/boinc/"
+benchmark = "/Volumes/ralford/membrane_efxn_benchmark/"
 
 def main( args ): 
 
@@ -62,8 +62,8 @@ def process_docking_results( benchmark, energy_fxn ):
 
             # Run decoy discrimination on each parsed scorefile (here, its by Irms and I_sc)
             scoring_script = boincdir + "score_energy_landscape.py"
-            output_discfile = casedir + "/" + case + ".disc"
-            t = Template( " -terms Irms I_sc -abinitio_scorefile $docking_sc > $docking_disc" )
+            output_discfile = casedir + "/" + case + ".tdisc"
+            t = Template( " -terms rms total_score -abinitio_scorefile $docking_sc > $docking_disc" )
             arguments2 = t.substitute( docking_sc=output_path, docking_disc=output_discfile )
             os.system( "python " + scoring_script + arguments2 )
         else: 
@@ -91,8 +91,8 @@ def process_docking_results( benchmark, energy_fxn ):
 
             # Run decoy discrimination on each parsed scorefile (here, its by Irms and I_sc)
             scoring_script = boincdir + "score_energy_landscape.py"
-            output_discfile = casedir + "/" + case + ".disc"
-            t = Template( " -terms Irms I_sc -abinitio_scorefile $docking_sc > $docking_disc" )
+            output_discfile = casedir + "/" + case + ".tdisc"
+            t = Template( " -terms rms total_score -abinitio_scorefile $docking_sc > $docking_disc" )
             arguments2 = t.substitute( docking_sc=output_path, docking_disc=output_discfile )
             os.system( "python " + scoring_script + arguments2 )
         else: 
