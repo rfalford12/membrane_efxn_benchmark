@@ -319,19 +319,88 @@ def run_fixed_backbone_design_calc( energy_fxn, rosetta_exe_path, cluster_type, 
             high_mem = True 
             write_and_submit_condor_script( outdir, case, executable, arguments, queue_no, high_mem )
 
+def run_heterodimer_docking_calc( energy_fxn, rosetta_exe_path, cluster_type, test_set, restore ):
+    """
+    A function for running docking calculations on large heterodimeric sets
+
+    Arguments
+        energy_fxn = energy function to use (typically, name of the weights file)
+        rosetta_exe_path = path to compiled Rosetta executable
+        cluster_tupe = specify slurm or condor job submission
+        test_set = Name of published set of test cases
+        restore = Restore behavior to pre ref2015 for reference benchmark runs
+    """
+
+    print "Initializing test: heterodimer docking"
+
+    # Setup path to test sets and executables
+    inputs = benchmark + "inputs/test_3.2_docking"
+    executable = rosetta_exe_path + "mp_dock" + "." + platform + compiler + buildenv
+    base_outdir = benchmark + "data/" + energy_fxn + "/test_3.2_docking"
+    if ( not os.path.isdir( base_outdir ) ): 
+        os.system( "mkdir " + base_outdir )
+
+    list_of_test_cases = inputs + "/" + test_set + "/dimers.list" 
+    with open( list_of_test_cases, 'rb' ) as f: 
+        test_cases = f.readlines()
+    test_cases = [ x.strip() for x in test_cases ]
+
+    test_outdir = benchmark + "data/" + energy_fxn + "/test_3.2_docking/" + test_set
+    os.system( "mkdir " + test_outdir )
+
+    # For each test case, generate specific arguments, job files, and then run
+    for case in test_cases:
+
+        # Make one directory per case
+        outdir = benchmark + "data/" + energy_fxn + "/test_3.2_docking/" + test_set + "/" + case
+        os.system( "mkdir " + outdir )
+        os.system( "cd " + outdir )
+
+        # Get chain info from test cases
+        chains = case[5:7]
+        pdbcode = case[0:4]
+        partner_chains = chains[0] + "_" + chains[1]
+
+        # Setup arguments by substitution
+        native = inputs + "/" + test_set + "/" + case + "/" + case + ".pdb"
+        prepacked = inputs + "/" + test_set + "/" + case + "/" + case + ".prepack.pdb"
+        spanfile = inputs + "/" + test_set + "/" + case + "/" + case + ".span"
+        s = Template( " -in:file:s $prepacked -in:file:native $native -mp:setup:spanfiles $spanfile -score:weights $sfxn -run:multiple_processes_writing_to_one_directory -docking:partners $partners -docking:dock_pert 3 8 -packing:pack_missing_sidechains 0 -nstruct 1000 -out:path:all $outdir" )
+        arguments = s.substitute( native=native, prepacked=prepacked, spanfile=spanfile, sfxn=energy_fxn, outdir=outdir, partners=partner_chains )
+        if ( restore == True ): 
+            arguments = arguments + " -restore_talaris_behavior"
+
+        # Write arguments and executable to a separate file
+        jobfile = outdir + "/" + case + "_docking.sh"
+        with open( jobfile, 'a' ) as f: 
+            f.write( "#!/bin/bash\n" )
+            f.write( executable + " " + arguments + "\n" )
+            f.close()
+        os.system( "chmod +x " + jobfile )
+
+        # Generate job submission file and then submit to cluster
+        print "Submitting docking test case from set " + test_set + ":", case
+        if ( cluster_type == "MARCC" ): 
+            write_and_submit_slurm_batch_script( outdir, case, jobfile, str(10) )
+        elif ( cluster_type == "STAMPEDE" ): 
+            write_and_submit_stampede2_slurm_script( outdir, case, jobfile )
+        else: 
+            queue_no = 300
+            write_and_submit_condor_script( outdir, case, executable, arguments, str(queue_no) )
+
 def run_docking_calc( energy_fxn, rosetta_exe_path, cluster_type, test_set, restore ): 
     """
     A function for running the docking calculations needed for the docking test
 
     Arguments: 
         energy_fxn = energy function to use (typically, name of the weights file)
-        rosetta_exe_path = pah to compiled Rosetta executable
+        rosetta_exe_path = path to compiled Rosetta executable
         cluster_type = specify slurm or condor job submission
         test_set = Name of published set of test cases
         restore = Restore behavior to pre ref2015 for reference benchmark runs
     """
 
-    print "Initializing test: docking"
+    print "Initializing test: homodimer docking"
 
     # Setup path to test sets and executables
     inputs = benchmark + "inputs/test_3.2_docking"
@@ -628,13 +697,19 @@ def main( args ):
     if ( "prediction" in test_types ): 
 
         # Fixed backbone design calculation for sequence recovery test
-        run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
+        #run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
 
         # Docking calculation for small homodimer set (Lomize et al. 2017)
         #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore )
 
         # Docking calculation for large homodimer set (Alford & Koehler Leman 2015)
         #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", restore )
+
+        # Docking calculation for large bound-bound set (Hurwitz et al. 2016)
+        run_heterodimer_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-bound-set", restore )
+
+        # Docking calculation for large unbound set (simulated, Hurwitz et al. 2016)
+        run_heterodimer_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-unbound-set", restore )
 
         # This doesn't have a label on it - so I'm wondering if this is where I had left off... 
         #run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore )
