@@ -1,0 +1,17 @@
+efxn	recovery	region
+m07	0.369	core
+m12	0.306	core
+r15	0.416	core
+new	0.409	core
+m07	0.669	lipid
+m12	0.616	lipid
+r15	0.654	lipid
+new	0.649	lipid
+m07	0.198	interface
+m12	0.186	interface
+r15	0.223	interface
+new	0.219	interface
+m07	0.182	aqueous
+m12	0.205	aqueous
+r15	0.236	aqueous
+new	0.229	aqueous
