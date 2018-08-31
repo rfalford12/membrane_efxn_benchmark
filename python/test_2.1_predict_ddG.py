@@ -108,7 +108,15 @@ def main( args ):
 
     parser.add_option('--restore', '-t', 
         action="store", 
-        help="Restore talaris behavior to pre-ref2015 for refernce benchmarks",)
+        help="Restore talaris behavior to pre-ref2015 for refernce benchmarks", )
+
+    parser.add_otpion( '--implicit_lipids', '-i', 
+        action="store", 
+        help="Use implicit lipids and default parameters when running this benchamrk", )
+
+    parser.add_option( '--add_pore', '-a', 
+        action="store", 
+        help="Calculate pores and cavities where applicable", )
 
     # parse arguments
     (options, args) = parser.parse_args(args=args[1:])
@@ -126,8 +134,12 @@ def main( args ):
 
     # Initialize Pyrosetta with const options
     option_string = "-run:constant_seed -in:ignore_unrecognized_res"
-    #if ( Options.restore ): 
-    #option_string = option_string + " -restore_talaris_behavior true"
+    if ( Options.restore ): 
+        option_string = option_string + " -restore_talaris_behavior true"
+    if ( Options.implicit_lipids ): 
+        option_string = option_string + " -mp:lipids:use_implicit_lipids true -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
+    if ( Options.aqueous_pore ): 
+        option_string = option_string + " -mp:pore:accomodate_pore true"
     init( extra_options = option_string )
 
     # Read database file including mutations (space delimited)
