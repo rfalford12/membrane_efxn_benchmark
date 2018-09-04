@@ -637,7 +637,7 @@ def main( args ):
         action="store", 
         help="Restore talaris behavior using tthe flag -restore_talaris_behavior for reference runs")
 
-    parser.add_otpion( '--implicit_lipids', '-i', 
+    parser.add_option( '--implicit_lipids', '-i', 
         action="store", 
         help="Use implicit lipids and default parameters when running this benchamrk", )
 
@@ -703,10 +703,10 @@ def main( args ):
         run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.1_monomer_landscape", "helices.list", "xml/test_1.1_monomer_landscape.xml", restore, Options.implicit_lipids, Options.add_pore )
 
         # Energy landscape test for aromatic-capped peptides
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.2_aro_landscape", "aro_helices.list", "xml/test_1.2_aro_landscape.xml", restore, , Options.implicit_lipids, Options.add_pore, "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.2_aro_landscape", "aro_helices.list", "xml/test_1.2_aro_landscape.xml", restore, Options.implicit_lipids, Options.add_pore, "true" )
 
         # Energy landscape test for leucine-lysine peptides
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.3_lk_landscape", "lk_peptides.list", "xml/test_1.3_lk_landscape.xml", restore, , Options.implicit_lipids, Options.add_pore, "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.3_lk_landscape", "lk_peptides.list", "xml/test_1.3_lk_landscape.xml", restore, Options.implicit_lipids, Options.add_pore, "true" )
 
         # Energy landscape test for adsorbed peptides
         run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.4_adsorbed_pept_landscape", "adsorbed_peptides.list", "xml/test_1.3_lk_landscape.xml", restore, Options.implicit_lipids, Options.add_pore, "true" )
