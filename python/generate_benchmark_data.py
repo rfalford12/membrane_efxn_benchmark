@@ -57,7 +57,7 @@ def write_and_submit_condor_script( path, name, executable, arguments, queue_no=
         f.write( "Queue " + str(queue_no) + "\n" )
 
     # Run the condor file
-    os.system( "condor_submit " + filename )
+    #os.system( "condor_submit " + filename )
 
 def write_and_submit_stampede2_slurm_script( path, name, jobfile, num_nodes=1 ): 
   
@@ -684,6 +684,14 @@ def main( args ):
     if ( Options.restore_talaris == "true" ): 
         restore = True
 
+    include_lipids = False
+    if ( Options.implicit_lipids == "true" ): 
+        include_lipids = True
+
+    add_pore = False
+    if ( Options.add_pore == "true" ): 
+        add_pore = True
+
     # If it doesn't exist, make the output data directory
     datadir = benchmark + "data/"
     if ( not os.path.isdir(datadir) ): 
@@ -700,57 +708,57 @@ def main( args ):
     if ( "landscape" in test_types ): 
     
         # Energy landscape test for single TM peptides found in nature
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.1_monomer_landscape", "helices.list", "xml/test_1.1_monomer_landscape.xml", restore, Options.implicit_lipids, Options.add_pore )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.1_monomer_landscape", "helices.list", "xml/test_1.1_monomer_landscape.xml", restore, include_lipids, add_pore )
 
         # Energy landscape test for aromatic-capped peptides
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.2_aro_landscape", "aro_helices.list", "xml/test_1.2_aro_landscape.xml", restore, Options.implicit_lipids, Options.add_pore, "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.2_aro_landscape", "aro_helices.list", "xml/test_1.2_aro_landscape.xml", restore, include_lipids, add_pore, "true" )
 
         # Energy landscape test for leucine-lysine peptides
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.3_lk_landscape", "lk_peptides.list", "xml/test_1.3_lk_landscape.xml", restore, Options.implicit_lipids, Options.add_pore, "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.3_lk_landscape", "lk_peptides.list", "xml/test_1.3_lk_landscape.xml", restore, include_lipids, add_pore, "true" )
 
         # Energy landscape test for adsorbed peptides
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.4_adsorbed_pept_landscape", "adsorbed_peptides.list", "xml/test_1.3_lk_landscape.xml", restore, Options.implicit_lipids, Options.add_pore, "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.4_adsorbed_pept_landscape", "adsorbed_peptides.list", "xml/test_1.3_lk_landscape.xml", restore, include_lipids, add_pore, "true" )
 
     # Run ddG calculations
     if ( "ddG" in test_types ): 
 
         # ddG of mutation calculation for Moon & Fleming Set
-        #run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA/OmpLA_Moon_Fleming_set.dat", "OmpLA_Moon_Fleming_set", restore,  Options.implicit_lipids, Options.add_pore )
+        #run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA/OmpLA_Moon_Fleming_set.dat", "OmpLA_Moon_Fleming_set", restore,  include_lipids, add_pore )
 
         # ddG of mutation calculation for McDonald & Fleming Set
-        #run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA_aro/OmpLA_aro_McDonald_Fleming_set.dat", "OmpLA_aro_McDonald_Fleming_set", restore, Options.implicit_lipids, Options.add_pore )
+        #run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA_aro/OmpLA_aro_McDonald_Fleming_set.dat", "OmpLA_aro_McDonald_Fleming_set", restore, include_lipids, add_pore )
 
         # ddG of mutation calculation for Marx & Fleming set
-        #run_ddG_of_mutation_calc( Options.energy_fxn, "PagP/PagP_Marx_Fleming_set.dat", "PagP_Marx_Fleming_set", restore, Options.implicit_lipids, Options.add_pore )
+        #run_ddG_of_mutation_calc( Options.energy_fxn, "PagP/PagP_Marx_Fleming_set.dat", "PagP_Marx_Fleming_set", restore, include_lipids, add_pore )
 
         # ddG of insertion landscape calculation for Ulmschneider set
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.2_ddG_of_insertion", "insertion_peptide.dat", "xml/test_2.2_ddG_insertion_landscape.xml", restore, Options.implicit_lipids, Options.add_pore, "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.2_ddG_of_insertion", "insertion_peptide.dat", "xml/test_2.2_ddG_insertion_landscape.xml", restore, include_lipids, add_pore, "true" )
 
         # ddG of insertion landscape calculation for pH dependent set - generate at pH = 4
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.3_pH_dependent_insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, Options.implicit_lipids, Options.add_pore , "true", "4" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.3_pH_dependent_insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, include_lipids, add_pore, "true", "4" )
     
         # ddG of insertion landscape calculation for pH dependent set - generate at pH = 7
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.3_pH_dependent_insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, Options.implicit_lipids, Options.add_pore, "true", "7" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.3_pH_dependent_insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, include_lipids, add_pore, "true", "7" )
 
     # Run prediction calculations
     if ( "prediction" in test_types ): 
 
         # Fixed backbone design calculation for sequence recovery test
-        run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore, Options.implicit_lipids, Options.add_pore )
+        run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore, include_lipids, add_pore )
 
         # Docking calculation for small homodimer set (Lomize et al. 2017)
-        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore, Options.implicit_lipids, False )
+        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore, include_lipids, False )
 
         # Docking calculation for large homodimer set (Alford & Koehler Leman 2015)
-        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", restore, Options.implicit_lipids, False )
+        #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-homodimer-set", restore, include_lipids, False )
 
         # Docking calculation for large bound-bound set (Hurwitz et al. 2016)
-        #run_heterodimer_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-bound-set", restore, Options.implicit_lipids, False )
+        #run_heterodimer_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-bound-set", restore, include_lipids, False )
 
         # Docking calculation for large unbound set (simulated, Hurwitz et al. 2016)
-        #run_heterodimer_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-unbound-set", restore, Options.implicit_lipids, False )
+        #run_heterodimer_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-unbound-set", restore, include_lipids, False )
 
         # Decoy Discrimination calculation for large and small sets
-        #run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore, Options.implicit_lipids, Options.add_pore )
+        #run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore, include_lipids, add_pore )
 
 if __name__ == "__main__" : main(sys.argv)
