@@ -57,7 +57,7 @@ def write_and_submit_condor_script( path, name, executable, arguments, queue_no=
         f.write( "Queue " + str(queue_no) + "\n" )
 
     # Run the condor file
-    #os.system( "condor_submit " + filename )
+    os.system( "condor_submit " + filename )
 
 def write_and_submit_stampede2_slurm_script( path, name, jobfile, num_nodes=1 ): 
   
@@ -213,7 +213,7 @@ def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_
         if ( restore == True ): 
             arguments = arguments + " -restore_talaris_behavior"
         if ( implicit_lipids == True ): 
-            arguments = arguments + " -mp:lipids:use_implicit_lipids true -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
+            arguments = arguments + " -mp:lipids:use_implicit_lipids true -mp:lipids:temperature 37.0 -mp:lipids:composition POPC"
         if ( aqueous_pore == True ): 
             arguemnts = arguments + " -mp:pore:accomodate_pore true"
 
@@ -593,6 +593,11 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
         arguments = s.substitute( modellist=modelslist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
         if ( restore == True ): 
             arguments = arguments + " -restore_talaris_behavior"
+        if ( implicit_lipids == True ): 
+            arguments = arguments + " -mp:lipids:use_implicit_lipids true -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
+        if ( aqueous_pore == True ): 
+            arguemnts = arguments + " -mp:pore:accomodate_pore true"
+
 
         # Write arguments and executable to a separate file
         jobfile = outdir + "/" + case + "_seqrecov.sh"
@@ -732,19 +737,19 @@ def main( args ):
         #run_ddG_of_mutation_calc( Options.energy_fxn, "PagP/PagP_Marx_Fleming_set.dat", "PagP_Marx_Fleming_set", restore, include_lipids, add_pore )
 
         # ddG of insertion landscape calculation for Ulmschneider set
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.2_ddG_of_insertion", "insertion_peptide.dat", "xml/test_2.2_ddG_insertion_landscape.xml", restore, include_lipids, add_pore, "true" )
+        #run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.2_ddG_of_insertion", "insertion_peptide.dat", "xml/test_2.2_ddG_insertion_landscape.xml", restore, include_lipids, add_pore, "true" )
 
         # ddG of insertion landscape calculation for pH dependent set - generate at pH = 4
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.3_pH_dependent_insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, include_lipids, add_pore, "true", "4" )
+        #run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.3_pH_dependent_insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, include_lipids, add_pore, "true", "4" )
     
         # ddG of insertion landscape calculation for pH dependent set - generate at pH = 7
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.3_pH_dependent_insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, include_lipids, add_pore, "true", "7" )
+        #run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.3_pH_dependent_insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, include_lipids, add_pore, "true", "7" )
 
     # Run prediction calculations
     if ( "prediction" in test_types ): 
 
         # Fixed backbone design calculation for sequence recovery test
-        run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore, include_lipids, add_pore )
+        #run_fixed_backbone_design_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore, include_lipids, add_pore )
 
         # Docking calculation for small homodimer set (Lomize et al. 2017)
         #run_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "small-homodimer-set", restore, include_lipids, False )
@@ -759,6 +764,6 @@ def main( args ):
         #run_heterodimer_docking_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "large-unbound-set", restore, include_lipids, False )
 
         # Decoy Discrimination calculation for large and small sets
-        #run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore, include_lipids, add_pore )
+        run_decoy_discrimination_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, restore, include_lipids, False )
 
 if __name__ == "__main__" : main(sys.argv)
