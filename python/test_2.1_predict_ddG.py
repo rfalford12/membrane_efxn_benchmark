@@ -11,16 +11,15 @@ from optparse import OptionParser, IndentedHelpFormatter
 _script_path_ = os.path.dirname( os.path.realpath(__file__) )
 
 import sys, os
-import commands
 import random
 
-import rosetta.protocols.membrane
-from rosetta.utility import vector1_bool
-from rosetta.core.chemical import aa_from_oneletter_code
-from rosetta.protocols.minimization_packing import PackRotamersMover
-from rosetta.core.pose import PDBInfo
-from rosetta.core.chemical import VariantType
-from rosetta.core.pack.task import TaskFactory
+import pyrosetta.rosetta.protocols.membrane
+from pyrosetta.rosetta.utility import vector1_bool
+from pyrosetta.rosetta.core.chemical import aa_from_oneletter_code
+from pyrosetta.rosetta.protocols.minimization_packing import PackRotamersMover
+from pyrosetta.rosetta.core.pose import PDBInfo
+from pyrosetta.rosetta.core.chemical import VariantType
+from pyrosetta.rosetta.core.pack.task import TaskFactory
 
 # Make a dictionary for classifying residue types (yes I know, global vars are bad practice)
 classification = {'A': "nonpolar", 'C' : "special", 'D' : "n-charged", 'E' : "n-charged", \
@@ -110,7 +109,7 @@ def main( args ):
         action="store", 
         help="Restore talaris behavior to pre-ref2015 for refernce benchmarks", )
 
-    parser.add_otpion( '--implicit_lipids', '-i', 
+    parser.add_option( '--implicit_lipids', '-i', 
         action="store", 
         help="Use implicit lipids and default parameters when running this benchamrk", )
 
@@ -125,11 +124,11 @@ def main( args ):
 
     # Error checking
     if ( not Options.mutation_list ):
-        print "Missing rquired option mutations list! Exiting..."
+        print("Missing rquired option mutations list! Exiting...")
         sys.exit()
 
     if ( not Options.energy_fxn ):
-        print "Missing required energy function weights! Exiting..."
+        print("Missing required energy function weights! Exiting...")
         sys.exit()
 
     # Initialize Pyrosetta with const options
@@ -138,8 +137,8 @@ def main( args ):
         option_string = option_string + " -restore_talaris_behavior true"
     if ( Options.implicit_lipids ): 
         option_string = option_string + " -mp:lipids:use_implicit_lipids true -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
-    if ( Options.aqueous_pore ): 
-        option_string = option_string + " -mp:pore:accomodate_pore true"
+    if ( Options.add_pore ): 
+        option_string = option_string + " -mp:pore:accommodate_pore true"
     init( extra_options = option_string )
 
     # Read database file including mutations (space delimited)
@@ -166,8 +165,8 @@ def main( args ):
 
         # Sanity check that the PDB file path and spanfile path exist
         if ( not os.path.isfile(entry[3]) or not os.path.isfile(entry[4]) ):
-            print entry[3], entry[4]
-            print "Path to PDB file or spanfile is invalid!"
+            print(entry[3] + " " + entry[4])
+            print("Path to PDB file or spanfile is invalid!")
             sys.exit()
 
         # Read PDB from table - note, must contain an absolute path
@@ -190,7 +189,8 @@ def main( args ):
 
         # Calculate the ddG of mutation for the given position
         ddG_of_mutation = compute_ddG( repacked_native, sfxn, int( entry[1] ), entry[2], repack_radius )
-        print ddG_of_mutation
+        print(ddG_of_mutation)
+        print_score_labels_to_file( repacked_native, sfxn, "dummy" )
 
         # Calculate some additional classifications for the mutation
         depth = pose.conformation().membrane_info().residue_z_position( pose.conformation(), int( entry[1] ) )
@@ -211,9 +211,85 @@ def compute_ddG( pose, sfxn, resnum, aa, repack_radius ):
     # Perform the mutation at residue <resnum> to amino acid <aa> and score
     mutated_pose = mutate_residue( pose, resnum, aa, repack_radius, sfxn )
     mutant_score = sfxn( mutated_pose )
+    
+    print_ddG_breakdown( pose, mutated_pose, sfxn, resnum, aa, "breakdown.sc" )
 
     # Calculate the ddG in place
     ddG = round( mutant_score - native_score, 3 )
     return ddG
+
+###############################################################################
+#@brief Print ddG breakdown from the pose
+# Extract weighted energies from the native and mutated pose. Calculate the ddG
+# of each and print the component-wise ddG vlaues
+def print_ddG_breakdown( native_pose, mutated_pose, sfxn, resnum, aa, fn ): 
+
+    # Extract scores
+    tmp_native = native_pose.energies().total_energies().weighted_string_of( sfxn.weights() )
+    tmp_mutant = mutated_pose.energies().total_energies().weighted_string_of( sfxn.weights() )
+
+    # Parse out scores
+    array_native = list(filter( None, tmp_native.split(' ') ))
+    array_mutant = list(filter( None, tmp_mutant.split(' ') ))
+
+    # Pull out only the scores from these arrays
+    native_scores = []
+    for i in range( len(array_native) ): 
+        if ( i % 2 != 0 ): 
+            native_scores.append( float( array_native[i] ) )
+
+    mutant_scores = []
+    for i in range( len(array_mutant) ): 
+        if ( i % 2 != 0 ): 
+            mutant_scores.append( float( array_mutant[i] ) )
+
+    # Make a label for the mutation
+    native_res = native_pose.residue( int( resnum ) ).name1()
+    mut_label = native_res + str(resnum) + aa
+
+    # Calculate ddG of individual components
+    ddGs = []
+    ddGs.append( mut_label )
+    for i in range( len( mutant_scores ) ): 
+        ddG_component = mutant_scores[i] - native_scores[i]
+        ddGs.append( round( ddG_component, 3 ) )
+
+    ddGs_str = convert_array_to_str( ddGs ) 
+    with open( fn, 'a' ) as f:
+        f.write( ddGs_str + "\n" )
+    f.close()
+
+###############################################################################
+#@brief Get header for ddG breakdown output
+# Save the score labels, to be printed at the top of the output breakdown file
+def print_score_labels_to_file( native_pose, sfxn, fn ): 
+
+    tmp_native = native_pose.energies().total_energies().weighted_string_of( sfxn.weights() )
+    array_native = list(filter( None, tmp_native.split(' ') ))
+    labels = []
+    labels.append( 'mutation ' ) # Append field for mutation label
+    for i in range( len(array_native) ): 
+        if ( i % 2 == 0 ): 
+            labels.append( array_native[i].translate(':') )
+
+    labels_str = convert_array_to_str( labels )
+    print(labels_str)
+#    with file( fn, 'a' ) as f:
+#        f.write( labels_str + "\n" )
+#    f.close()
+
+###############################################################################
+#@brief Convert an array to a space deliminted string
+# Save the score labels, to be printed at the top of the output breakdown file
+def convert_array_to_str( array ): 
+
+    linestr = ""
+    for elem in array: 
+        if ( linestr == "" ): 
+            linestr = linestr + str( elem )
+        else: 
+            linestr = linestr + " " + str( elem )
+
+    return linestr
 
 if __name__ == "__main__" : main(sys.argv)

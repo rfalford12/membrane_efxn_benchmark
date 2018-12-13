@@ -47,34 +47,35 @@ def process_decoy_disc_results( benchmark, energy_fxn ):
     executable = rosettadir + "score_jd2.linux" + compiler + buildenv
     r = Template( " -overwrite -in:file:l $refined_list -in:file:native $native -in:membrane -mp:setup:spanfiles $spanfile -out:file:scorefile $output_sc -score:weights $energy_fxn" )
 
-    ## Process Small-Decoy Dataset (From Dutagaci et al.)
-    # list_of_test_cases = path_to_test  + "/dutagaci-set/decoy_sets.list"
-    # with open( list_of_test_cases, 'rb' ) as f: 
-    # 	test_cases = f.readlines()
-    # test_cases = [ x.strip() for x in test_cases ]
+    # Process Small-Decoy Dataset (From Dutagaci et al.)
+    list_of_test_cases = path_to_test  + "/dutagaci-set/decoy_sets.list"
+    with open( list_of_test_cases, 'rb' ) as f: 
+        test_cases = f.readlines()
+    test_cases = [ x.strip() for x in test_cases ]
 
-    # for case in test_cases: 
-	   #  casedir = outdir + "/dutagaci-set/" + case 
-	   #  os.chdir( casedir )
+    for case in test_cases: 
+        casedir = outdir + "/dutagaci-set/" + case 
+        os.chdir( casedir )
 
-	   # 	#Setup variables for rescoring
-	   #  os.system( "ls -d " + casedir + "/*_0001.pdb > models_list" )
-	   #  models_list = casedir + "/models_list"
-	   #  native = path_to_test + "/dutagaci-set/" + case + "/" + case + "_native.pdb"
-	   #  spanfile = path_to_test + "/dutagaci-set/" + case + "/" + case + ".span"
-	   #  output_sc = casedir + "/" + case + "_rescored.sc"
-	   #  arguments0 = r.substitute( refined_list=models_list, native=native, spanfile=spanfile, output_sc=output_sc, energy_fxn=energy_fxn )
-	    
-	   #  # Rescore all of the refined decoys to calculate an rms relative to the native
-	   #  rescore_cmd = executable + " " + arguments0
-	   #  os.system( rescore_cmd )
+        #Setup variables for rescoring
+        os.system( "ls -d " + casedir + "/*_0001.pdb > models_list" )
+        models_list = casedir + "/models_list"
+        native = path_to_test + "/dutagaci-set/" + case + "/" + case + "_native.pdb"
+        spanfile = path_to_test + "/dutagaci-set/" + case + "/" + case + ".span"
+        output_sc = casedir + "/" + case + "_rescored.sc"
+        arguments0 = r.substitute( refined_list=models_list, native=native, spanfile=spanfile, output_sc=output_sc, energy_fxn=energy_fxn )
+        
+        # Rescore all of the refined decoys to calculate an rms relative to the native
+        rescore_cmd = executable + " " + arguments0
+        os.system( rescore_cmd )
 
-    #         # Run decoy discrimination on each parsed scorefile (here, its by Irms and I_sc)
-    #         scoring_script = boincdir + "score_energy_landscape.py"
-    #         output_discfile = casedir + "/" + case + ".disc"
-    #         t = Template( " -terms rms total_score -abinitio_scorefile $docking_sc > $docking_disc" )
-    #         arguments2 = t.substitute( docking_sc=output_sc, docking_disc=output_discfile )
-    #         os.system( "python " + scoring_script + arguments2 )
+
+        # Run decoy discrimination on each parsed scorefile (here, its by Irms and I_sc)
+        scoring_script = boincdir + "score_energy_landscape.py"
+        output_discfile = casedir + "/" + case + ".disc"
+        t = Template( " -terms rms total_score -abinitio_scorefile $docking_sc > $docking_disc" )
+        arguments2 = t.substitute( docking_sc=output_sc, docking_disc=output_discfile )
+        os.system( "python " + scoring_script + arguments2 )
 
     ## Process Large-Decoy Dataset (From Yarov-Yaraovy et al.)
     list_of_test_cases = path_to_test  + "/yarov-yaravoy-set/decoy_sets.list"
@@ -83,26 +84,27 @@ def process_decoy_disc_results( benchmark, energy_fxn ):
     test_cases = [ x.strip() for x in test_cases ]
 
     for case in test_cases:
-            casedir = outdir + "/yarov-yaravoy-set/" + case
-            os.chdir( casedir )
+        casedir = outdir + "/yarov-yaravoy-set/" + case
+        os.chdir( casedir )
 
-                # Setup variables for rescoring                                                                                              
-            os.system( "ls -d " + casedir + "/*_0001.pdb > models_list" )
-            models_list = casedir + "/models_list"
-            native = path_to_test + "/yarov-yaravoy-set/" + case + "/" + case + "_native.pdb"
-            spanfile = path_to_test + "/yarov-yaravoy-set/" + case + "/" + case + ".span"
-            output_sc = casedir + "/" + case + "_rescored.sc"
-            arguments0 = r.substitute( refined_list=models_list, native=native, spanfile=spanfile, output_sc=output_sc, energy_fxn=energy_fxn )
-            # Rescore all of the refined decoys to calculate an rms relative to the native                                                   
-            rescore_cmd = executable + " " + arguments0
-            os.system( rescore_cmd )
+        # Setup variables for rescoring                                                                                              
+        os.system( "ls -d " + casedir + "/*_0001.pdb > models_list" )
+        models_list = casedir + "/models_list"
+        native = path_to_test + "/yarov-yaravoy-set/" + case + "/" + case + "_native.pdb"
+        spanfile = path_to_test + "/yarov-yaravoy-set/" + case + "/" + case + ".span"
+        output_sc = casedir + "/" + case + "_rescored.sc"
+        arguments0 = r.substitute( refined_list=models_list, native=native, spanfile=spanfile, output_sc=output_sc, energy_fxn=energy_fxn )
+        
+        # Rescore all of the refined decoys to calculate an rms relative to the native                                                   
+        rescore_cmd = executable + " " + arguments0
+        os.system( rescore_cmd )
 
-            # Run decoy discrimination on each parsed scorefile (here, its by Irms and I_sc)
-            scoring_script = boincdir + "score_energy_landscape.py"
-            output_discfile = casedir + "/" + case + ".disc"
-            t = Template( " -terms rms total_score -abinitio_scorefile $docking_sc > $docking_disc" )
-            arguments2 = t.substitute( docking_sc=output_sc, docking_disc=output_discfile )
-            os.system( "python " + scoring_script + arguments2 )
+        # Run decoy discrimination on each parsed scorefile (here, its by Irms and I_sc)
+        scoring_script = boincdir + "score_energy_landscape.py"
+        output_discfile = casedir + "/" + case + ".disc"
+        t = Template( " -terms rms total_score -abinitio_scorefile $docking_sc > $docking_disc" )
+        arguments2 = t.substitute( docking_sc=output_sc, docking_disc=output_discfile )
+        os.system( "python " + scoring_script + arguments2 )
 
         
 if __name__ == "__main__" : main(sys.argv)

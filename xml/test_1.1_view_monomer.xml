@@ -1,0 +1,15 @@
+<ROSETTASCRIPTS>
+	<SCOREFXNS>
+		<ScoreFunction name="s" weights="%%sfxn_weights%%"/>
+	</SCOREFXNS>
+	<MOVERS>
+		<AddMembraneMover name="add_memb" />
+		<TransformIntoMembraneMover name="transform_into_memb" />
+		<PeptideOrientationMover name="landscape_test" scorefxn="s" interface="1" zcoord="%%zcoord%%" angle="%%angle%%" />
+	</MOVERS>
+	<PROTOCOLS>
+		<Add mover_name="add_memb"/>
+		<Add mover_name="transform_into_memb"/>
+		<Add mover_name="landscape_test"/>
+	</PROTOCOLS>
+</ROSETTASCRIPTS>
