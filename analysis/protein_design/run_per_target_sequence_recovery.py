@@ -128,11 +128,11 @@ def main( argv ):
 		action="store", 
 		help="Name of file containing redesign PDBs",)
 
-	parser.add_option('--redesign_hyd_c1', '-a'. 
+	parser.add_option('--redesign_composition1', '-a'. 
 		action="store", 
 		help="Name of the file containing hydration value data files for c1", )
 
-	parser.add_option('--redesign_hyd_c2', '-b', 
+	parser.add_option('--redesign_composition2', '-b', 
 		action="store", 
 		help="Name of the file containing hydration value data files for c2", )
 
