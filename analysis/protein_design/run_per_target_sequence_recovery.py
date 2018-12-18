@@ -3,17 +3,6 @@
 # @brief: Calculate sequence recovery over individual targets
 # @author: Rebecca F. Alford (ralford3@jhu.edu)
 
-# Main function that reads in a list of native targets and designed targets
-# hyd values in each lipid composition should live in the inputs directory
-# will also need to know which lipid compositions to compare
-
-# A function that compares residues and atoms with hyd values
-# If there is an atom that has a different hyd value, re-compare the residue
-# (may need to round the hyd value to the nearest ??)
-
-# Then, make a true/false vector as - should we measure recovery at this residue? 
-# then then - use this script to measure sequence recovery and design recovery and then print to a file
-
 import sys, os
 import numpy as np
 from pyrosetta import *
@@ -21,10 +10,7 @@ from pyrosetta import *
 from optparse import OptionParser, IndentedHelpFormatter
 _script_path_ = os.path.dirname( os.path.realpath(__file__) )
 
-
 workdir = "/Users/ralford/research/membrane_efxn_benchmark/analysis"
-comp1_file = "1AFO_tr_DLPC_hydration.dat"
-comp2_file = "1AFO_tr_DOPC_hydration.dat" 
 
 def classify_hydration( h ): 
 
@@ -128,14 +114,6 @@ def main( argv ):
 		action="store", 
 		help="Name of file containing redesign PDBs",)
 
-	parser.add_option('--redesign_composition1', '-a'. 
-		action="store", 
-		help="Name of the file containing hydration value data files for c1", )
-
-	parser.add_option('--redesign_composition2', '-b', 
-		action="store", 
-		help="Name of the file containing hydration value data files for c2", )
-
 	parser.add_option('--composition1', '-l', 
 		action="store", 
 		help="Name of lipid compositoin 1", )
@@ -155,10 +133,12 @@ def main( argv ):
     	native_pdbs = natives.readlines()
     	native_pdbs = [ x.strip() for x in native_pdbs ]
 
-    # Read the redesign PDB list
+    # Read the redesign PDB list for composition 1
     with open( Options.redesign_pdb_list, 'rb' ) as redesigned:
     	redesgin_pdbs = redesgined.readlines()
     	redesgin_pdbs = [ x.strip() for x in redesign_pdbs ]
+
+    # Read hydration parameter files 
 
     # Assert the lists have the same length
     assert len(native_pdbs) == len(redesign_pdbs)
