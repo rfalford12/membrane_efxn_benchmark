@@ -3,17 +3,27 @@
 # @brief: Calculate sequence recovery over individual targets
 # @author: Rebecca F. Alford (ralford3@jhu.edu)
 
+<<<<<<< HEAD
+import sys, os
+=======
 import sys
 import os
+>>>>>>> e39cb737e9de9d1dd7d49aaedcecadfb3e87306c
 import numpy as np
 from pyrosetta import *
 
 from optparse import OptionParser, IndentedHelpFormatter
+<<<<<<< HEAD
+_script_path_ = os.path.dirname( os.path.realpath(__file__) )
+
+workdir = "/Users/ralford/research/membrane_efxn_benchmark/analysis"
+=======
 _script_path_ = os.path.dirname(os.path.realpath(__file__))
 
 workdir = "/Users/ralford/research/membrane_efxn_benchmark/analysis"
 benchmark_data = "/home/ralford/membrane_efxn_benchmark/data/franklin2018/"
 aas = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
+>>>>>>> e39cb737e9de9d1dd7d49aaedcecadfb3e87306c
 
 def classify_hydration(h):
 
@@ -128,6 +138,9 @@ def main(args):
 		action="store",
 		help="Name of file containing redesigned PDBs",)
 
+<<<<<<< HEAD
+	parser.add_option('--composition1', '-l', 
+=======
 	parser.add_option('--composition1', '-l',
 		action="store",
 		help="Name of lipid compositoin 1", )
@@ -137,6 +150,7 @@ def main(args):
 		help="Name of lipid composition 2", )
 
 	parser.add_option('--output', '-o',
+>>>>>>> e39cb737e9de9d1dd7d49aaedcecadfb3e87306c
 		action="store", 
 		help="Name of output filename", )
 
@@ -156,12 +170,21 @@ def main(args):
 		native_pdbs = natives.readlines()
 		native_pdbs = [x.strip() for x in native_pdbs]
 
+<<<<<<< HEAD
+    # Read the redesign PDB list for composition 1
+    with open( Options.redesign_pdb_list, 'rb' ) as redesigned:
+    	redesgin_pdbs = redesgined.readlines()
+    	redesgin_pdbs = [ x.strip() for x in redesign_pdbs ]
+=======
     # Read the redesign PDB list from lipid composition 1
 	with open( Options.redesign_pdb_list, 'rt' ) as redesigned:
 		designed_pdbs = redesigned.readlines()
 		designed_pdbs = [ x.strip() for x in designed_pdbs ]
 		redesign_pdbs_c1 = [ (benchmark_data + lipid_type1 + "/" + x) for x in designed_pdbs ]
 		redesign_pdbs_c2 = [ (benchmark_data + lipid_type2 + "/" + x) for x in designed_pdbs ]
+>>>>>>> e39cb737e9de9d1dd7d49aaedcecadfb3e87306c
+
+    # Read hydration parameter files 
 
     # Assert the lists have the same length
 	assert len(native_pdbs) == len(designed_pdbs)

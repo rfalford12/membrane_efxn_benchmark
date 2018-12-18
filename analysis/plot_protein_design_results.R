@@ -75,9 +75,6 @@ plot.overall.design.performance <- function( df ) {
   return(design.performance)
 }
 
-# May want to consider what amino acids have the opportunity to be designed differently
-# then measure recovery over that subset
-
 # Plot the overall design performance for all five subsets
 all.targets.df <- load.design.performance.data( total.seq.recov, total.kl.divergence, all.targets )
 all.targets.overall.design <- plot.overall.design.performance( all.targets.df )
@@ -93,6 +90,10 @@ eukaryote.targets.overall.design <- plot.overall.design.performance( eukaryote.t
 
 human.targets.df <- load.design.performance.data( total.seq.recov, total.kl.divergence, human.targets )
 human.targets.overall.design <- plot.overall.design.performance( human.targets.df )
+
+# May want to consider what amino acids have the opportunity to be designed differently
+# then measure recovery over that subset
+
 
 # TODO - want to do another plot that more specifically compares lipid compositions - because this shows the bigger picture against the controls
 
