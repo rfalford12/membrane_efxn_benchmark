@@ -7,9 +7,11 @@ library(reshape2)
 library(ggrepel)
 library(scales)
 library(dplyr)
+library(viridisLite)
+library(viridis)
 
 # Current working directory
-workdir <- "/Users/ralford/research/membrane_efxn_benchmark/analysis/protein_design"
+workdir <- "/Volumes/ralford/membrane_efxn_benchmark/analysis/protein_design"
 
 # Files containing all of the data
 total.seq.recov <- "total_sequence_recovery.dat"
@@ -20,11 +22,11 @@ per.class.seq.recov <- "per_amino_acid_class_recovery.dat"
 per.class.kl.divergence <- "per_amino_acid_class_divergence.dat"
 
 # Some predefined target subsets
-all.targets <-  c( "m07_all", "m12_all", "r15_all", "m18_all_DLPC_37", "m18_all_DOPC_37")
-bacteria.targets <- c( "m07_bacteria", "m12_all", "r15_bacteria", "m18_bacteria_DLPE_37", "m18_bacteria_DOPC_37" )
-ecoli.targets <- c( "m07_ecoli", "m12_ecoli", "r15_ecoli", "m18_ecoli_DLPE_37", "m18_ecoli_DLPE_37" )
-human.targets <- c( "m07_humans", "m12_humans", "r15_humans", "m18_humans_DLPC_37", "m18_humans_DOPC_37" )
-eukaryote.targets <- c( "m07_eukaryotes", "m12_eukaryotes", "r15_eukaryotes", "m18_eukaryotes_DLPC_37", "m18_eukaryotes_DOPC_37")
+all.targets <-  c( "m07_all", "m12_all", "r15_all", "m18_all_DLPC", "m18_all_DOPC")
+bacteria.targets <- c( "m07_bacteria", "m12_all", "r15_bacteria", "m18_bacteria_DLPE", "m18_bacteria_DOPC" )
+ecoli.targets <- c( "m07_ecoli", "m12_ecoli", "r15_ecoli", "m18_ecoli_DLPE", "m18_ecoli_DLPE" )
+human.targets <- c( "m07_humans", "m12_humans", "r15_humans", "m18_humans_DLPC", "m18_humans_DOPC" )
+eukaryote.targets <- c( "m07_eukaryotes", "m12_eukaryotes", "r15_eukaryotes", "m18_eukaryotes_DLPC", "m18_eukaryotes_DOPC")
 
 load.design.performance.data <- function( recov.fn, div.fn, run.list ) {
   # Read the recovery and divergence data into melted dataframes
@@ -78,6 +80,8 @@ plot.overall.design.performance <- function( df ) {
 # Plot the overall design performance for all five subsets
 all.targets.df <- load.design.performance.data( total.seq.recov, total.kl.divergence, all.targets )
 all.targets.overall.design <- plot.overall.design.performance( all.targets.df )
+print(all.targets.overall.design)
+save_plot( paste( workdir, "overall_design_performance.png", sep= "/"), all.targets.overall.design, units = "in", base_width = 8, base_height = 5 )
 
 bacteria.targets.df <- load.design.performance.data( total.seq.recov, total.kl.divergence, bacteria.targets )
 bacteria.targets.overall.design <- plot.overall.design.performance( bacteria.targets.df)
@@ -91,138 +95,149 @@ eukaryote.targets.overall.design <- plot.overall.design.performance( eukaryote.t
 human.targets.df <- load.design.performance.data( total.seq.recov, total.kl.divergence, human.targets )
 human.targets.overall.design <- plot.overall.design.performance( human.targets.df )
 
-# May want to consider what amino acids have the opportunity to be designed differently
-# then measure recovery over that subset
+# Per AA design performance
+df.aa.recov <- read.table( paste( workdir, "per_amino_acid_recovery.dat", sep = "/"), header = T )
+aa.rcov <- melt(df.aa.recov, id.vars = c("efxn", "residue", "category"), value.name = "recovery", variable.name = "solvation" )
+df.aa.div <- read.table( paste( workdir, "per_amino_acid_divergence.dat", sep = "/"), header = T )
+aa.div <- melt(df.aa.div, id.vars = c("efxn", "residue", "category"), value.name = "kl.divergence", variable.name = "solvation" )
+per.aa.stats <- aa.rcov
+per.aa.stats$kl.divergence <- aa.div$kl.divergence
 
+design.all.list <- c("r15_all", "m07_all", "m12_all", "m18_all_DOPC")
+per.aa.stats.all <- per.aa.stats[ which( is.element( per.aa.stats$efxn, design.all.list ) ), ]
 
-# TODO - want to do another plot that more specifically compares lipid compositions - because this shows the bigger picture against the controls
+per.aa.design.perf <- ggplot( data = per.aa.stats.all[ which( per.aa.stats.all$solvation != "surface"),], aes( x = recovery, y = kl.divergence, fill = category ) ) +
+  geom_vline( xintercept = 0.05, color = "gray60", linetype = "dashed" ) +
+  geom_hline( yintercept = 0, color = "gray60", linetype = "dashed" ) +
+  geom_point( size = 0.75 ) +
+  geom_label( aes( label = residue ), size = 2.5, label.padding = unit(0.1, "lines"), force = 0.2, segment.size = 0.35 ) +
+  scale_x_continuous( "Sequence Recovery (%)", limits = c(0, 0.5), expand = c(0.05,0.05) ) +
+  scale_y_continuous( "KL Divergence", limits = c(-4, 3) ) +
+  scale_fill_brewer( palette = "Pastel1") +
+  facet_grid( efxn ~ solvation, scales = "free_x" ) +
+  theme_bw() +
+  theme(  legend.position = "right",
+          axis.text = element_text( size = 10 ),
+          text = element_text( size = 10 ),
+          axis.line.x = element_line( size = 0.35 ),
+          axis.line.y = element_line( size = 0.35 ),
+          axis.ticks.x = element_line( size = 0.35 ),
+          axis.ticks.y = element_line( size = 0.35) )
 
-# df.aa.recov <- read.table( paste( workdir, "per_amino_acid_recovery.dat", sep = "/"), header = T )
-# aa.rcov <- melt(df.aa.recov, id.vars = c("efxn", "residue", "category"), value.name = "recovery", variable.name = "solvation" )
-# df.aa.div <- read.table( paste( workdir, "per_amino_acid_divergence.dat", sep = "/"), header = T )
-# aa.div <- melt(df.aa.div, id.vars = c("efxn", "residue", "category"), value.name = "kl.divergence", variable.name = "solvation" )
-# per.aa.stats <- aa.rcov
-# per.aa.stats$kl.divergence <- aa.div$kl.divergence
-# 
-# design.all.list <- c("r15_all", "m07_all", "m12_all", "m18_all_DOPC_37")
-# per.aa.stats.all <- per.aa.stats[ which( is.element( per.aa.stats$efxn, design.all.list ) ), ]
-# 
-# # (not sure this is the right plot for this example)
-# p <- ggplot( data = per.aa.stats.all[ which( per.aa.stats.all$solvation != "surface"),], aes( x = recovery, y = kl.divergence, fill = category ) ) +
-#   geom_vline( xintercept = 0.05, color = "gray60", linetype = "dashed" ) + 
-#   geom_hline( yintercept = 0, color = "gray60", linetype = "dashed" ) + 
-#   geom_point( size = 0.75 ) + 
-#   geom_label( aes( label = residue ), size = 2.5, label.padding = unit(0.1, "lines"), force = 0.2, segment.size = 0.35 ) +
-#   scale_x_continuous( "Sequence Recovery (%)", limits = c(0, 0.5), expand = c(0.05,0.05) ) +
-#   scale_y_continuous( "KL Divergence", limits = c(-4, 3) ) +
-#   scale_fill_brewer( palette = "Pastel1") + 
-#   facet_grid( efxn ~ solvation, scales = "free_x" ) + 
-#   theme_bw() + 
-#   theme(  legend.position = "none",  
-#           axis.text = element_text( size = 10 ), 
-#           text = element_text( size = 10 ),
-#           axis.line.x = element_line( size = 0.35 ),
-#           axis.line.y = element_line( size = 0.35 ), 
-#           axis.ticks.x = element_line( size = 0.35 ), 
-#           axis.ticks.y = element_line( size = 0.35) )  
-# print(p)
-# 
-# # Plot overall sequence recover vs. divergence
-# df.class.recov <- read.table( paste( workdir, "per_amino_acid_class_recovery.dat", sep = "/"), header = T )
-# class.rcov <- melt(df.class.recov, id.vars = c("efxn", "class"), value.name = "recovery", variable.name = "solvation" )
-# df.class.div <- read.table( paste( workdir, "per_amino_acid_class_divergence.dat", sep = "/"), header = T )
-# class.div <- melt(df.class.div, id.vars = c("efxn", "class"), value.name = "kl.divergence", variable.name = "solvation" )
-# per.class.stats <- class.rcov
-# per.class.stats$kl.divergence <- class.div$kl.divergence
-# 
-# design.all.list <- c("r15_all", "m07_all", "m12_all", "m18_all_DOPC_37")
-# per.class.stats.all <- per.class.stats[ which( is.element( per.class.stats$efxn, design.all.list ) ), ]
-# 
-# # (not sure this is the right plot for this example)
-# q <- ggplot( data = per.class.stats.all[ which( per.class.stats.all$solvation != "surface"),], aes( x = recovery, y = kl.divergence, fill = class ) ) +
-#   geom_vline( xintercept = 0.05, color = "gray60", linetype = "dashed" ) + 
-#   geom_hline( yintercept = 0, color = "gray60", linetype = "dashed" ) + 
-#   scale_fill_brewer( palette = "Pastel1") + 
-#   geom_point( size = 0.75 ) + 
-#   geom_label_repel( aes( label = class ), size = 2.5, label.padding = unit(0.1, "lines"), force = 0.2, segment.size = 0.35 ) +
-#   scale_x_continuous( "Sequence Recovery (%)", limits = c(0, 0.75), expand = c(0.05,0.05) ) +
-#   scale_y_continuous( "KL Divergence", limits = c(-20, 10) ) +
-#   facet_grid( efxn ~ solvation, scales = "free_x" ) + 
-#   theme_bw() + 
-#   theme(  legend.position = "none",  
-#           axis.text = element_text( size = 10 ), 
-#           text = element_text( size = 10 ),
-#           axis.line.x = element_line( size = 0.35 ),
-#           axis.line.y = element_line( size = 0.35 ), 
-#           axis.ticks.x = element_line( size = 0.35 ), 
-#           axis.ticks.y = element_line( size = 0.35) )  
-# print(q)
-# 
-# save_plot( "~/Desktop/per_class_seqrecov.png", q, units = "in", base_width = 8, base_height = 6.5)
+save_plot( paste( workdir, "per_aa_design_perf_all.png", sep= "/"), per.aa.design.perf, units = "in", base_width = 10, base_height = 6)
 
-## TODO: need to do a bunch of specific subset comparisons
+per.aa.design.perf.density <- ggplot( data = per.aa.stats.all[ which( per.aa.stats.all$solvation != "surface"),], aes( x = recovery, fill = efxn, color = efxn ) ) +
+  background_grid() + 
+  geom_vline( xintercept = 0.05, color = "gray60", linetype = "dashed" ) +
+  geom_density( alpha = 0.1 ) + 
+  scale_x_continuous( "Sequence Recovery (%)", limits = c(0, 0.5), expand = c(0.05,0.05) ) +
+  scale_y_continuous( "Density", expand = c(0,0) ) +
+  scale_color_viridis( option = "D", end = 0.8, direction = -1, discrete = TRUE ) + 
+  scale_fill_viridis(  option = "D", end = 0.8, direction = -1, discrete = TRUE ) + 
+  facet_grid( ~ solvation, scales = "free_x" ) +
+  theme(  legend.position = "bottom",
+          axis.text = element_text( size = 10 ),
+          text = element_text( size = 10 ),
+          axis.line.x = element_line( size = 0.35 ),
+          axis.line.y = element_line( size = 0.35 ),
+          axis.ticks.x = element_line( size = 0.35 ),
+          axis.ticks.y = element_line( size = 0.35) )
+print(per.aa.design.perf.density)
+save_plot( paste( workdir, "per_aa_design_distribution.png", sep = "/"), per.aa.design.perf.density, units = "in", base_width = 8, base_height = 4 )
+
+# Plot per-class sequence recover vs. divergence
+df.class.recov <- read.table( paste( workdir, "per_amino_acid_class_recovery.dat", sep = "/"), header = T )
+class.rcov <- melt(df.class.recov, id.vars = c("efxn", "class"), value.name = "recovery", variable.name = "solvation" )
+df.class.div <- read.table( paste( workdir, "per_amino_acid_class_divergence.dat", sep = "/"), header = T )
+class.div <- melt(df.class.div, id.vars = c("efxn", "class"), value.name = "kl.divergence", variable.name = "solvation" )
+per.class.stats <- class.rcov
+per.class.stats$kl.divergence <- class.div$kl.divergence
+
+design.all.list <- c("r15_all", "m07_all", "m12_all", "m18_all_DOPC")
+per.class.stats.all <- per.class.stats[ which( is.element( per.class.stats$efxn, design.all.list ) ), ]
+
+# (not sure this is the right plot for this example)
+per.class.design.perf <- ggplot( data = per.class.stats.all[ which( per.class.stats.all$solvation != "surface"),], aes( x = recovery, y = kl.divergence, fill = class ) ) +
+  geom_vline( xintercept = 0.05, color = "gray60", linetype = "dashed" ) +
+  geom_hline( yintercept = 0, color = "gray60", linetype = "dashed" ) +
+  scale_fill_brewer( palette = "Pastel1") +
+  geom_point( size = 0.75 ) +
+  geom_label_repel( aes( label = class ), size = 2.5, label.padding = unit(0.1, "lines"), force = 0.2, segment.size = 0.35 ) +
+  scale_x_continuous( "Sequence Recovery (%)", limits = c(0, 0.6), expand = c(0.05,0.05) ) +
+  scale_y_continuous( "KL Divergence" ) +
+  facet_grid( efxn ~ solvation, scales = "free_x" ) +
+  theme_bw() +
+  theme(  legend.position = "right",
+          axis.text = element_text( size = 10 ),
+          text = element_text( size = 10 ),
+          axis.line.x = element_line( size = 0.35 ),
+          axis.line.y = element_line( size = 0.35 ),
+          axis.ticks.x = element_line( size = 0.35 ),
+          axis.ticks.y = element_line( size = 0.35) )
+
+save_plot( paste( workdir, "per_class_design_performance.png", sep = "/"), per.class.design.perf, units = "in", base_width = 10, base_height = 6 )
 
 ## Analyze the dependence of recovery of human sequences on lipid composition
-## TODO - maybe plot these on the same plot? 
-# human.overall.stats <- total.stats[ which( total.stats$subset == "humans" & total.stats$efxn.version == "m18" & total.stats$lipid.types != "pm" ),] 
-# t <- ggplot( data = human.overall.stats, aes( x = lipid.types, y = recovery ) ) + 
-#   background_grid() +  
-#   geom_bar( position = "dodge", stat = "identity", fill = "gray70" ) + 
-#   geom_bar( data = subset( human.overall.stats[ which( human.overall.stats$solvation == "overall"), ], 
-#                            recovery==max( human.overall.stats[ which( human.overall.stats$solvation == "overall"), ]$recovery )),  
-#             aes(lipid.types, recovery), fill = "#fb6a4a", stat = "identity" ) + 
-#   geom_bar( data = subset( human.overall.stats[ which( human.overall.stats$solvation == "buried"), ], 
-#                            recovery==max( human.overall.stats[ which( human.overall.stats$solvation == "buried"), ]$recovery )),  
-#             aes(lipid.types, recovery), fill = "#fb6a4a", stat = "identity" ) + 
-#   geom_bar( data = subset( human.overall.stats[ which( human.overall.stats$solvation == "surface"), ], 
-#                            recovery==max( human.overall.stats[ which( human.overall.stats$solvation == "surface"), ]$recovery )),  
-#             aes(lipid.types, recovery), fill = "#fb6a4a", stat = "identity" ) + 
-#   geom_bar( data = subset( human.overall.stats[ which( human.overall.stats$solvation == "lipid_facing"), ], 
-#                            recovery==max( human.overall.stats[ which( human.overall.stats$solvation == "lipid_facing"), ]$recovery )),  
-#             aes(lipid.types, recovery), fill = "#fb6a4a", stat = "identity" ) + 
-#   geom_bar( data = subset( human.overall.stats[ which( human.overall.stats$solvation == "interfacial"), ], 
-#                            recovery==max( human.overall.stats[ which( human.overall.stats$solvation == "interfacial"), ]$recovery )),  
-#             aes(lipid.types, recovery), fill = "#fb6a4a", stat = "identity" ) + 
-#   geom_bar( data = subset( human.overall.stats[ which( human.overall.stats$solvation == "aqueous"), ], 
-#                            recovery==max( human.overall.stats[ which( human.overall.stats$solvation == "aqueous"), ]$recovery )),  
-#             aes(lipid.types, recovery), fill = "#fb6a4a", stat = "identity" ) + 
-#   geom_hline( yintercept = 0.05, color = "gray30", linetype = "dashed" ) + 
-#   scale_x_discrete( "" ) + 
-#   scale_y_continuous( "Sequence Recovery (%)", limits = c(0,0.4), expand = c(0,0) ) + 
-#   facet_wrap( ~ solvation, scales = "free_x" ) + 
-#   theme( axis.text.x = element_text( angle = 90, hjust = 1 ) ) 
-# print(t)
-# 
-# # Going to do one alternate version of this plot which compares the thickness
-# dlpc.thk <- 15.351
-# dmpc.thk <- 17.974
-# dppc.thk <- 20.029
-# dopc.thk <- 18.639
-# popc.thk <- 19.1
-#   
-# thickness <- c()
-# for (lipid.type in human.overall.stats$lipid.types) { 
-#   if ( lipid.type == "DLPC" ) { 
-#     thickness <- c( thickness, dlpc.thk )  
-#   } else if ( lipid.type == "DMPC" ) {
-#     thickness <- c( thickness, dmpc.thk )
-#   } else if ( lipid.type == "DPPC" ) {
-#     thickness <- c( thickness, dppc.thk )
-#   } else if ( lipid.type == "DOPC" ) {
-#     thickness <- c( thickness, dopc.thk )
-#   } else if ( lipid.type == "POPC" ) {
-#     thickness <- c( thickness, popc.thk )
-#   }
-# }
-# human.overall.stats$thickness <- thickness
-# max.recov.by.solv <- human.overall.stats %>% group_by(solvation) %>% summarise(Max = max(recovery))
-# u <- ggplot( data = human.overall.stats, aes( x = thickness, y = recovery ) ) + 
-#   background_grid() + 
-#   geom_point() + 
-#   geom_line() + 
-#   geom_label_repel( aes( label = lipid.types ), force = 3, fill = "gray80" ) + 
-#   geom_hline( yintercept = 0.05, color = "gray30", linetype = "dashed" ) + 
-#   scale_x_continuous( "Hydrophobic Thickness (Å)", limits = c(15, 21), expand = c(0,0) ) + 
-#   scale_y_continuous( "Sequence Recovery (%)", limits = c(0,0.4), expand = c(0,0) ) + 
-#   facet_wrap( ~ solvation ) 
-# print(u)
+human.overall.stats <- total.stats[ which( total.stats$subset == "humans" & total.stats$efxn.version == "m18" & total.stats$lipid.types != "pm" ),]
+human.lipid.comp.design.perf <- ggplot( data = human.overall.stats, aes( x = lipid.types, y = recovery ) ) +
+  background_grid() +
+  geom_bar( position = "dodge", stat = "identity", fill = "gray70" ) +
+  geom_bar( data = subset( human.overall.stats[ which( human.overall.stats$solvation == "overall"), ],
+                           recovery==max( human.overall.stats[ which( human.overall.stats$solvation == "overall"), ]$recovery )),
+            aes(lipid.types, recovery), fill = "#fb6a4a", stat = "identity" ) +
+  geom_bar( data = subset( human.overall.stats[ which( human.overall.stats$solvation == "buried"), ],
+                           recovery==max( human.overall.stats[ which( human.overall.stats$solvation == "buried"), ]$recovery )),
+            aes(lipid.types, recovery), fill = "#fb6a4a", stat = "identity" ) +
+  geom_bar( data = subset( human.overall.stats[ which( human.overall.stats$solvation == "surface"), ],
+                           recovery==max( human.overall.stats[ which( human.overall.stats$solvation == "surface"), ]$recovery )),
+            aes(lipid.types, recovery), fill = "#fb6a4a", stat = "identity" ) +
+  geom_bar( data = subset( human.overall.stats[ which( human.overall.stats$solvation == "lipid_facing"), ],
+                           recovery==max( human.overall.stats[ which( human.overall.stats$solvation == "lipid_facing"), ]$recovery )),
+            aes(lipid.types, recovery), fill = "#fb6a4a", stat = "identity" ) +
+  geom_bar( data = subset( human.overall.stats[ which( human.overall.stats$solvation == "interfacial"), ],
+                           recovery==max( human.overall.stats[ which( human.overall.stats$solvation == "interfacial"), ]$recovery )),
+            aes(lipid.types, recovery), fill = "#fb6a4a", stat = "identity" ) +
+  geom_bar( data = subset( human.overall.stats[ which( human.overall.stats$solvation == "aqueous"), ],
+                           recovery==max( human.overall.stats[ which( human.overall.stats$solvation == "aqueous"), ]$recovery )),
+            aes(lipid.types, recovery), fill = "#fb6a4a", stat = "identity" ) +
+  geom_hline( yintercept = 0.05, color = "gray30", linetype = "dashed" ) +
+  scale_x_discrete( "" ) +
+  scale_y_continuous( "Sequence Recovery (%)", limits = c(0,0.4), expand = c(0,0) ) +
+  facet_wrap( ~ solvation, scales = "free_x" ) +
+  theme( axis.text.x = element_text( angle = 90, hjust = 1 ) )
+save_plot( paste( workdir, "human_lipid_comp_design_perf.png", sep = "/"), human.lipid.comp.design.perf, units = "in", base_width = 5, base_height = 4 )
+
+# Going to do one alternate version of this plot which compares the thickness
+dlpc.thk <- 15.351
+dmpc.thk <- 17.974
+dppc.thk <- 20.029
+dopc.thk <- 18.639
+popc.thk <- 19.1
+
+thickness <- c()
+for (lipid.type in human.overall.stats$lipid.types) {
+  if ( lipid.type == "DLPC" ) {
+    thickness <- c( thickness, dlpc.thk )
+  } else if ( lipid.type == "DMPC" ) {
+    thickness <- c( thickness, dmpc.thk )
+  } else if ( lipid.type == "DPPC" ) {
+    thickness <- c( thickness, dppc.thk )
+  } else if ( lipid.type == "DOPC" ) {
+    thickness <- c( thickness, dopc.thk )
+  } else if ( lipid.type == "POPC" ) {
+    thickness <- c( thickness, popc.thk )
+  }
+}
+human.overall.stats$thickness <- thickness
+max.recov.by.solv <- human.overall.stats %>% group_by(solvation) %>% summarise(Max = max(recovery))
+human.lipid.comp.thk.design.perf <- ggplot( data = human.overall.stats, aes( x = thickness, y = recovery ) ) +
+  background_grid() +
+  geom_point() +
+  geom_line() +
+  geom_label_repel( aes( label = lipid.types ), force = 3, fill = "gray80", size = 2.5 ) +
+  geom_hline( yintercept = 0.05, color = "gray30", linetype = "dashed" ) +
+  scale_x_continuous( "Hydrophobic Thickness (Å)", limits = c(15, 21), expand = c(0,0) ) +
+  scale_y_continuous( "Sequence Recovery (%)", limits = c(0,0.4), expand = c(0,0) ) +
+  facet_wrap( ~ solvation )
+save_plot( paste( workdir, "human_lipid_comp_thk_design_perf.png", sep = "/"), human.lipid.comp.thk.design.perf, units = "in", base_width = 5, base_height = 4 )
+
