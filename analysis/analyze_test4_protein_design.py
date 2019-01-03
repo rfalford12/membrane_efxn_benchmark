@@ -213,7 +213,7 @@ def compute_divergence_by_aa_class( design_matrix, category ):
 def main( argv ) : 
 
 	# Read in all design calculation files
-	design_calc_files = "/Volumes/ralford/membrane_efxn_benchmark/analysis/protein_design/design_calcs.list"
+	design_calc_files = "/home/ralford/membrane_efxn_benchmark/analysis/protein_design/design_calcs.list"
 	design_matrices = read_design_calc_files( design_calc_files )
 
 	# Analyze total sequence recovery of designed proteins (per-category)
