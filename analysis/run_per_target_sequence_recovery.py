@@ -95,6 +95,7 @@ def get_class_for_aa( aa ):
 	elif ( aa in special ): 
 		return "special" 
 	else: 
+		print(aa)
 		return "not an aa"
 
 def compute_per_category_recovery_on_subset( native_pose, design_pose, subset ): 
