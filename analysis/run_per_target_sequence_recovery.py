@@ -178,6 +178,7 @@ def compute_sequence_recovery_on_subset( native_pose, design_pose, subset ):
 			recovery[aa] = round( correct/native, 3)
 
 	total_recovered = round( total_correct/total_native, 3)
+	print(recovery)
 
 	return recovery, total_recovered, total_correct, total_native
 
