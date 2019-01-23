@@ -23,7 +23,7 @@ nonpolar = ['A', 'I', 'L', 'M', 'V' ]
 polar = [ 'N', 'Q', 'S', 'T' ]
 aromatic = ['F', 'Y', 'W']
 charged = [ 'D', 'E', 'H', 'R', 'K' ]
-special = ['C', 'G']
+special = ['C', 'G', 'P']
 
 def classify_hydration(h):
 
@@ -95,7 +95,6 @@ def get_class_for_aa( aa ):
 	elif ( aa in special ): 
 		return "special" 
 	else: 
-		print(aa)
 		return "not an aa"
 
 def compute_per_category_recovery_on_subset( native_pose, design_pose, subset ): 
@@ -118,7 +117,6 @@ def compute_per_category_recovery_on_subset( native_pose, design_pose, subset ):
 		native_class = get_class_for_aa( native_pose.residue(r).name1() )
 		n_native[ native_class ] = n_native[ native_class ] + 1
 		designed_class = get_class_for_aa( design_pose.residue(r).name1() )
-		print(native_class, designed_class)
 		if ( native_class == designed_class ): 
 			n_correct[ native_class ] = n_correct[ native_class ] + 1
 
