@@ -117,6 +117,7 @@ def compute_per_category_recovery_on_subset( native_pose, design_pose, subset ):
 		native_class = get_class_for_aa( native_pose.residue(r).name1() )
 		n_native[ native_class ] = n_native[ native_class ] + 1
 		designed_class = get_class_for_aa( design_pose.residue(r).name1() )
+		print(native_class, designed_class)
 		if ( native_class == designed_class ): 
 			n_correct[ native_class ] = n_correct[ native_class ] + 1
 
@@ -178,7 +179,6 @@ def compute_sequence_recovery_on_subset( native_pose, design_pose, subset ):
 			recovery[aa] = round( correct/native, 3)
 
 	total_recovered = round( total_correct/total_native, 3)
-	print(recovery)
 
 	return recovery, total_recovered, total_correct, total_native
 
