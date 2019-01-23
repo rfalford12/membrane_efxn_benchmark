@@ -10,9 +10,20 @@ from pyrosetta import *
 from optparse import OptionParser, IndentedHelpFormatter
 _script_path_ = os.path.dirname(os.path.realpath(__file__))
 
+# Needed Paths
 workdir = "/home/ralford/research/membrane_efxn_benchmark/analysis"
 benchmark_data = "/home/ralford/membrane_efxn_benchmark/data/franklin2018/"
+
+# Amino acid types
 aas = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
+
+# Amino Acid categories
+classes = [ 'nonpolar', 'polar', 'aromatic', 'charged', 'special' ]
+nonpolar = ['A', 'I', 'L', 'M', 'V' ]
+polar = [ 'N', 'Q', 'S', 'T' ]
+aromatic = ['F', 'Y', 'W']
+charged = [ 'D', 'E', 'H', 'R', 'K' ]
+special = ['C', 'G']
 
 def classify_hydration(h):
 
@@ -70,6 +81,61 @@ def calculate_subset_with_different_hyd(fn_comp1, fn_comp2):
 	# Convert subset residues into a nonredundant set
 	subset_residues_set = set(subset_residues)
 	return subset_residues_set
+
+def get_class_for_aa( aa ): 
+
+	if ( aa in nonpolar ): 
+		return "nonpolar"
+	elif ( aa in polar ): 
+		return "polar"
+	elif ( aa in charged ): 
+		return "charged"
+	elif ( aa in aromatic ): 
+		return "aromatic"
+	elif ( aa in special ): 
+		return "special" 
+	else: 
+		return "not an aa"
+
+def compute_per_category_recovery_on_subset( native_pose, design_pose, subset ): 
+
+	n_classes = len(classes)
+	n_correct = dict.fromkeys(classes)
+	n_native = dict.fromkeys(classes)
+
+	# Log the native sequence
+	native_sequence = []
+	for r in range(1, native_pose.total_residue()):
+		if ( r in subset and native_pose.residue(r).is_protein() ):
+			native_sequence.append( native_pose.residue(r).name1() )
+
+	# Calculate the n_native array
+	for r in range(1, native_pose.total_residue()): 
+		native_class = get_class_for_aa( native_pose.residue(r).name1() )
+		n_native[ native_class ] = n_native[ native_class ] + 1
+		designed_class = get_class_for_aa( design_pose.residue(r).name1() )
+		if ( native_class == designed_class ): 
+			n_correct[ native_class ] = n_correct[ native_class ] + 1
+
+	# Calculate per-amino acid class recovery
+	recovery = {}
+	total_native = 0
+	total_correct = 0
+
+	for c in classes: 
+		native = n_native[c]
+		correct = n_correct[c]
+		total_native += n_native[c]
+		total_correct += n_correct[c]
+
+		if ( native == 0 ): 
+			recovery[c] = -1
+		else: 
+			recovery[c] = round( correct/native, 3)
+
+	total_recovered = round( total_correct/total_native, 3)
+
+	return recovery, total_recovered, total_correct, total_native
 
 def compute_sequence_recovery_on_subset( native_pose, design_pose, subset ):
 
@@ -187,27 +253,25 @@ def main(args):
 
 	# Assign an output filename
 	output_filename = Options.output
-	with open( output_filename, 'wt' ) as f: 
-		f.write( "target lipid_type aa recovery\n" )
 
+	# Grab the lipid type name
+	lipid_type_name1 = lipid_type1.split("_")[1]
+	lipid_type_name2 = lipid_type2.split("_")[1]
+
+	### Per-aa, per-target sequence recovery calculation
 	# For each target, calculate the difference in hydration, then the difference in recovery
 	n_correct_c1 = 0
 	n_native_c1 = 0
 	n_correct_c2 = 0
 	n_native_c2 = 0
+	output_aa_file = output_filename + "_per_aa.dat"
+	with open( output_aa_file, 'wt' ) as f: 
+		f.write( "target lipid_type aa recovery\n" )
 	for i in range(0, n_targets): 
 
 		# Get the target name
 		target_name = [ x.split("_") for x in native_poses[i].pdb_info().name().split("/") ][6][0]
 
-		# Read in the hydration parameters from lipid composition 1
-		lipid_type_name1 = lipid_type1.split("_")[1]
-		hydration_fn_c1 = benchmark_data + lipid_type1 + "/" + target_name + "_" + lipid_type_name1 + "_hydration.dat"
-		lipid_type_name2 = lipid_type2.split("_")[1]
-		hydration_fn_c2 = benchmark_data + lipid_type2 + "/" + target_name + "_" + lipid_type_name2 + "_hydration.dat"
-
-		# Find the subset of residues that are affected by a change in hyd
-		#residue_subset = calculate_subset_with_different_hyd( hydration_fn_c1, hydration_fn_c2 )
 		residue_subset = []
 		# Calculate the sequence recovery for proteins designed in lipid composition 1
 		c1_recovery, c1_total_recovery, c1_correct, c1_native = compute_sequence_recovery_on_subset( native_poses[i], redesigned_poses_c1[i], residue_subset )
@@ -220,7 +284,7 @@ def main(args):
 		n_native_c2 += c2_native
 
 		# Output the data for c1
-		with open( output_filename, 'at' ) as f:
+		with open( output_aa_file, 'at' ) as f:
 			# Recovery information for lipid composition 1
 			f.write( target_name + " " + lipid_type_name1 + " total " + str(c1_total_recovery) + "\n"  )
 			for aa in c1_recovery: 
@@ -233,8 +297,54 @@ def main(args):
 
 	overall_c1_recov = round( n_correct_c1 / n_native_c1, 3 )
 	overall_c2_recov = round( n_correct_c2 / n_native_c2, 3 )
-	print("Recovery in", lipid_type1, ":", overall_c1_recov, "with available positions n=", n_native_c1)
-	print("Recovery in", lipid_type2, ":", overall_c2_recov, "with available positions n=", n_native_c2)
+	print("Per-aa recovery in", lipid_type1, ":", overall_c1_recov, "with available positions n=", n_native_c1)
+	print("Per-aa recovery in", lipid_type2, ":", overall_c2_recov, "with available positions n=", n_native_c2)
+
+	### Per-amino acid category, per-target sequence recovery calculation
+	# For each target, calculate the difference in hydration, then the difference in recovery
+	n_correct_c1 = 0
+	n_native_c1 = 0
+	n_correct_c2 = 0
+	n_native_c2 = 0
+	output_category_file = output_filename + "_per_category.dat"
+	with open( output_category_file, 'wt' ) as f: 
+		f.write( "target lipid_type category recovery\n" )
+
+	for i in range(0, n_targets): 
+
+		# Get the target name
+		target_name = [ x.split("_") for x in native_poses[i].pdb_info().name().split("/") ][6][0]
+
+		# Find the subset of residues that are affected by a change in hyd
+		residue_subset = []
+		# Calculate the sequence recovery for proteins designed in lipid composition 1
+		c1_recovery, c1_total_recovery, c1_correct, c1_native = compute_per_category_recovery_on_subset( native_poses[i], redesigned_poses_c1[i], residue_subset )
+		n_correct_c1 += c1_correct
+		n_native_c1 += c1_native
+
+		# Calculate sequence recovery for poses designed in lipid composition 2
+		c2_recovery, c2_total_recovery, c2_correct, c2_native = compute_per_category_recovery_on_subset( native_poses[i], redesigned_poses_c2[i], residue_subset )
+		n_correct_c2 += c2_correct
+		n_native_c2 += c2_native
+
+		# Output the data for c1
+		with open( output_category_file, 'at' ) as f:
+			# Recovery information for lipid composition 1
+			f.write( target_name + " " + lipid_type_name1 + " total " + str(c1_total_recovery) + "\n"  )
+			for aa in c1_recovery: 
+				f.write( target_name + " " + lipid_type_name1 + " " + aa + " " + str(c1_recovery[aa]) + "\n" )
+
+			# Recovery information for lipid composition 2
+			f.write( target_name + " " + lipid_type_name2 + " total " + str(c2_total_recovery) + "\n"  )
+			for aa in c2_recovery: 
+				f.write( target_name + " " + lipid_type_name2 + " " + aa + " " + str(c2_recovery[aa]) + "\n" )
+
+	overall_c1_recov = round( n_correct_c1 / n_native_c1, 3 )
+	overall_c2_recov = round( n_correct_c2 / n_native_c2, 3 )
+	print("Per-category recovery in", lipid_type1, ":", overall_c1_recov, "with available positions n=", n_native_c1)
+	print("Per-category recovery in", lipid_type2, ":", overall_c2_recov, "with available positions n=", n_native_c2)
+
+
 
 if __name__ == "__main__" : main(sys.argv)
 
