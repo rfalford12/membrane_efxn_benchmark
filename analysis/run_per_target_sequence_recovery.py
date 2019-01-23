@@ -145,6 +145,7 @@ def compute_sequence_recovery_on_subset( native_pose, design_pose, subset ):
 	for i in n_correct: 
 		n_correct[i] = 0.0
 		n_native[i] = 0.0
+	print n_correct, n_native
 
 	# Log the native subset sequence
 	native_sequence = []
