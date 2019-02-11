@@ -204,13 +204,13 @@ def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_
             spanfile = "single_TM_mode"
 
         # Should I tune the pH of my simulation?
-        arguments = " -overwrite -mp:pore:accommodate_pore false -in:file:s " +  pdbfile + " -mp:setup:spanfiles " + spanfile + " -parser:script_vars sfxn_weights=" + energy_fxn + " -parser:protocol " + xml_script
+        arguments = " -overwrite -in:file:s " +  pdbfile + " -mp:setup:spanfiles " + spanfile + " -parser:script_vars sfxn_weights=" + energy_fxn + " -parser:protocol " + xml_script
         if ( pH != "0" ): 
             arguments = arguments + " -pH_mode true -value_pH " + pH
         if ( restore == True ): 
-            arguments = arguments + " -restore_talaris_behavior"
+            arguments = arguments + " -restore_talaris_behavior -restore_lazaridis_imm_behavior"
         if ( implicit_lipids == True ): 
-            arguments = arguments + " -mp:lipids:use_implicit_lipids true -mp:lipids:temperature 37.0 -mp:lipids:composition DLPE"
+            arguments = arguments + " -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
         #arguemnts = arguments + " -mp:pore:accomodate_pore false"
 
         # Write arguments and executable to a separate file
@@ -252,8 +252,8 @@ def run_ddG_of_mutation_calc( energy_fxn, list_of_ddGs, test_name, restore, impl
     python_script = benchmark + "/python/test_2.1_predict_ddG.py"
     energy_function = energy_fxn
     mlist = path_to_test + "/" + list_of_ddGs
-    s = Template( "--energy_fxn $energy_func --mutation_list $list_of_mutations --outdir  $outdir --implicit_lipids $ilm --add_pore $add_pore")
-    arguments = s.substitute( energy_func=energy_function, list_of_mutations=mlist, outdir=outdir, ilm=implicit_lipids, add_pore=aqueous_pore )
+    s = Template( "--energy_fxn $energy_func --mutation_list $list_of_mutations --outdir  $outdir --implicit_lipids $ilm ")
+    arguments = s.substitute( energy_func=energy_function, list_of_mutations=mlist, outdir=outdir, ilm=implicit_lipids )
     if ( restore == "true" ): 
         arguments = arguments + " --restore True"
 
@@ -896,12 +896,10 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
         s = Template( "-overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
         arguments = s.substitute( modellist=pdblist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
         if ( restore == True ): 
-            arguments = arguments + " -restore_talaris_behavior"
+            arguments = arguments + " -restore_talaris_behavior -restore_lazaridis_imm_behavior"
         if ( implicit_lipids == True ): 
-            arguments = arguments + " -mp:lipids:use_implicit_lipids true -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
-        if ( aqueous_pore == True ): 
-            arguemnts = arguments + " -mp:pore:accomodate_pore true"
-
+            arguments = arguments + " -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
+    
         # Write arguments and executable to a separate file
         jobfile = outdir + "/" + case + "_seqrecov.sh"
         with open( jobfile, 'a' ) as f: 
@@ -945,11 +943,9 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
         s = Template( " -overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
         arguments = s.substitute( modellist=modelslist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
         if ( restore == True ): 
-            arguments = arguments + " -restore_talaris_behavior"
+            arguments = arguments + " -restore_talaris_behavior -restore_lazaridis_imm_behavior"
         if ( implicit_lipids == True ): 
-            arguments = arguments + " -mp:lipids:use_implicit_lipids true -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
-        if ( aqueous_pore == True ): 
-            arguemnts = arguments + " -mp:pore:accomodate_pore true"
+            arguments = arguments + " -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
 
 
         # Write arguments and executable to a separate file
@@ -1117,15 +1113,15 @@ def main( args ):
         #run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.3_pH_dependent_insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, include_lipids, add_pore, "true", "4" )
     
         # ddG of insertion landscape calculation for pH dependent set - generate at pH = 7
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.3_pH_dependent_insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, include_lipids, add_pore, "true", "7" )
+        #run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.3_pH_dependent_insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, include_lipids, add_pore, "true", "7" )
 
         # ddG of mutation calculation for Moon & Fleming Set
-        #run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA/OmpLA_Moon_Fleming_set.dat", "OmpLA_Moon_Fleming_set", restore,  include_lipids, add_pore )
+        run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA/OmpLA_Moon_Fleming_set.dat", "OmpLA_Moon_Fleming_set", restore,  include_lipids, add_pore )
 
         # ddG of mutation calculation for McDonald & Fleming Set
-        #run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA_aro/OmpLA_aro_McDonald_Fleming_set.dat", "OmpLA_aro_McDonald_Fleming_set", restore, include_lipids, add_pore )
+        run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA_aro/OmpLA_aro_McDonald_Fleming_set.dat", "OmpLA_aro_McDonald_Fleming_set", restore, include_lipids, add_pore )
 
         # ddG of mutation calculation for Marx & Fleming set
-        #run_ddG_of_mutation_calc( Options.energy_fxn, "PagP/PagP_Marx_Fleming_set.dat", "PagP_Marx_Fleming_set", restore, include_lipids, add_pore )
+        run_ddG_of_mutation_calc( Options.energy_fxn, "PagP/PagP_Marx_Fleming_set.dat", "PagP_Marx_Fleming_set", restore, include_lipids, add_pore )
 
 if __name__ == "__main__" : main(sys.argv)

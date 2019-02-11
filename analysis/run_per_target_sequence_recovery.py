@@ -12,7 +12,8 @@ _script_path_ = os.path.dirname(os.path.realpath(__file__))
 
 # Needed Paths
 workdir = "/home/ralford/research/membrane_efxn_benchmark/analysis"
-benchmark_data = "/home/ralford/membrane_efxn_benchmark/data/franklin2018/"
+#benchmark_data = "/home/ralford/membrane_efxn_benchmark/data/franklin2019/test4_protein_design/"
+benchmark_data = "/home/ralford/membrane_efxn_benchmark/data/"
 
 # Amino acid types
 aas = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']

@@ -113,10 +113,6 @@ def main( args ):
         action="store", 
         help="Use implicit lipids and default parameters when running this benchamrk", )
 
-    parser.add_option( '--add_pore', '-a', 
-        action="store", 
-        help="Calculate pores and cavities where applicable", )
-
     # parse arguments
     (options, args) = parser.parse_args(args=args[1:])
     global Options
@@ -134,12 +130,11 @@ def main( args ):
     # Initialize Pyrosetta with const options
     option_string = "-run:constant_seed -in:ignore_unrecognized_res"
     if ( Options.restore ): 
-        option_string = option_string + " -restore_talaris_behavior true"
+        option_string = option_string + " -restore_talaris_behavior true -restore_lazaridis_imm_behavior"
     if ( Options.implicit_lipids ): 
-        option_string = option_string + " -mp:lipids:use_implicit_lipids true -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
-    if ( Options.add_pore ): 
-        option_string = option_string + " -mp:pore:accommodate_pore true"
-    init( extra_options = option_string )
+        option_string = option_string + " -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
+
+    init( extra_options=option_string )
 
     # Read database file including mutations (space delimited)
     # Expected header format: Nat Pos Mut PDb Spanfile pH exp_ddG double_mut
@@ -149,8 +144,9 @@ def main( args ):
     mutation_list = [ x.split(' ') for x in content ]
 
     # Create an energy function
+    print("going to make energy function")
     sfxn = create_score_function( Options.energy_fxn )
-
+    print("done")
     # Set the repack radius from the option system
     repack_radius = 8.0
     # if ( Options.repack_radius ):

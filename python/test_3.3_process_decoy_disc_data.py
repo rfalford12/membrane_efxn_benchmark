@@ -95,7 +95,7 @@ def process_decoy_disc_results( benchmark, energy_fxn ):
         output_sc = casedir + "/" + case + "_rescored.sc"
         arguments0 = r.substitute( refined_list=models_list, native=native, spanfile=spanfile, output_sc=output_sc, energy_fxn=energy_fxn )
         
-        # Rescore all of the refined decoys to calculate an rms relative to the native                                                   
+        # Rescore all of the refined decoys to calculate an rms relative to the native                         
         rescore_cmd = executable + " " + arguments0
         os.system( rescore_cmd )
 
