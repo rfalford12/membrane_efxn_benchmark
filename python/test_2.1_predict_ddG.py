@@ -129,10 +129,10 @@ def main( args ):
 
     # Initialize Pyrosetta with const options
     option_string = "-run:constant_seed -in:ignore_unrecognized_res"
-    if ( Options.restore ): 
-        option_string = option_string + " -restore_talaris_behavior true -restore_lazaridis_imm_behavior"
+    #if ( Options.restore ): 
+    #   option_string = option_string + " -restore_talaris_behavior true -restore_lazaridis_imm_behavior"
     if ( Options.implicit_lipids ): 
-        option_string = option_string + " -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
+        option_string = option_string + " -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC -mp:lipids:has_pore false"
 
     init( extra_options=option_string )
 

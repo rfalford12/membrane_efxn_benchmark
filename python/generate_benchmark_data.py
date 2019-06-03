@@ -154,7 +154,7 @@ def write_and_submit_slurm_batch_script( path, name, jobfile, num_nodes=1 ):
     sbatch_command = "sbatch " + filename
     os.system( sbatch_command )
 
-def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_name, input_list, xml_protocol, restore, implicit_lipids, aqueous_pore, single_TM="false", pH="0" ): 
+def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_name, input_list, xml_protocol, restore, implicit_lipids, single_TM="false", pH="0" ): 
     """
     A general functions for running energy landscape calculations given a list of input helices
 
@@ -211,7 +211,6 @@ def run_energy_landscape_calc( energy_fxn, rosetta_exe_path, cluster_type, test_
             arguments = arguments + " -restore_talaris_behavior -restore_lazaridis_imm_behavior"
         if ( implicit_lipids == True ): 
             arguments = arguments + " -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
-        #arguemnts = arguments + " -mp:pore:accomodate_pore false"
 
         # Write arguments and executable to a separate file
         jobfile = outdir + "/" + case + "_energy_landscape.sh"
@@ -377,7 +376,7 @@ def run_heterodimer_docking_calc( energy_fxn, rosetta_exe_path, cluster_type, te
         native = inputs + "/" + test_set + "/" + case + "/" + case + ".pdb"
         prepacked = outdir + "/" + case + "_relaxed_prepacked.pdb"
         spanfile = inputs + "/" + test_set + "/" + case + "/" + case + ".span"
-        scorefile = outdir + "/" + case + "_" + energy_fxn + "_docking.sc"
+        scorefile = outdir ≈ç+ "/" + case + "_" + energy_fxn + "_docking.sc"
         s = Template( " -in:file:s $prepacked -in:file:native $native -mp:setup:spanfiles $spanfile -score:weights $sfxn -run:multiple_processes_writing_to_one_directory -docking:partners $partners -docking:dock_pert 3 8 -packing:pack_missing_sidechains 0 -nstruct 1000 -out:path:all $outdir -mp:dock:weights_fa $sfxn -out:file:scorefile $scfile" )
         arguments = s.substitute( native=native, prepacked=prepacked, spanfile=spanfile, sfxn=energy_fxn, outdir=outdir, partners=partner_chains, scfile=scorefile )
         if ( restore == True ): 
@@ -855,21 +854,21 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
     os.system( "mkdir " + base_outdir )
 
     ### Test Set #1: Yarov-Yaravoy Low Resolution Decoys (Membrane ab initio generated)
-    list_of_test01_cases = inputs + "/yarov-yaravoy-set/decoy_sets.list"
-    with open( list_of_test01_cases, 'rb' ) as f:
-        test01_cases = f.readlines()
-    test01_cases = [ x.strip() for x in test01_cases ]
+    #list_of_test01_cases = inputs + "/yarov-yaravoy-set/decoy_sets.list"
+    #with open( list_of_test01_cases, 'rb' ) as f:
+    #    test01_cases = f.readlines()
+    #test01_cases = [ x.strip() for x in test01_cases ]
 
-    outdir_test01 = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/yarov-yaravoy-set"
-    os.system( "mkdir " + outdir_test01 )
-    os.chdir( outdir_test01 )
+    #outdir_test01 = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/yarov-yaravoy-set"
+    #os.system( "mkdir " + outdir_test01 )
+    #os.chdir( outdir_test01 )
 
     # For each test case, generate specific arguments, condor_files, and then run
-    for case in test01_cases:
+    #for case in test01_cases:
 
-        outdir = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/yarov-yaravoy-set/" + case
-        os.system( "mkdir " + outdir )
-        os.system( "cd " + outdir )
+    #    outdir = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/yarov-yaravoy-set/" + case
+#        os.system( "mkdir " + outdir )
+#        os.system( "cd " + outdir )
 
         # Select 100 random decoys of the set of 5000
         #decoy_selection = random.sample(range(1,5000), 100)
@@ -890,33 +889,33 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
          #   f.close()
 
         # Setup case-specific variables (pdbfile, spanfile, xmlargs)
-        native = inputs + "/yarov-yaravoy-set/" + case + "/" + case + "_native.pdb"
-        spanfile = inputs + "/yarov-yaravoy-set/" + case + "/" + case + ".span"
-        pdblist = inputs + "/yarov-yaravoy-set/" + case + "/" + case + "_sampled_candidates.list"
-        s = Template( "-overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
-        arguments = s.substitute( modellist=pdblist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
-        if ( restore == True ): 
-            arguments = arguments + " -restore_talaris_behavior -restore_lazaridis_imm_behavior"
-        if ( implicit_lipids == True ): 
-            arguments = arguments + " -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
+ #       native = inputs + "/yarov-yaravoy-set/" + case + "/" + case + "_native.pdb"
+ #       spanfile = inputs + "/yarov-yaravoy-set/" + case + "/" + case + ".span"
+ #       pdblist = inputs + "/yarov-yaravoy-set/" + case + "/" + case + "_sampled_candidates.list"
+ #       s = Template( "-overwrite -in:file:native $native -relax:constrain_relax_to_start_coords -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
+ #       arguments = s.substitute( modellist=pdblist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
+ #       if ( restore == True ): 
+ #           arguments = arguments + " -restore_talaris_behavior -restore_lazaridis_imm_behavior"
+ #       if ( implicit_lipids == True ): 
+ #           arguments = arguments + " -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
     
         # Write arguments and executable to a separate file
-        jobfile = outdir + "/" + case + "_seqrecov.sh"
-        with open( jobfile, 'a' ) as f: 
-            f.write( "#!/bin/bash\n" )
-            f.write( executable + " " + arguments + "\n" )
-            f.close()
-        os.system( "chmod +x " + jobfile )
+ #       jobfile = outdir + "/" + case + "_seqrecov.sh"
+ #       with open( jobfile, 'a' ) as f: 
+ #           f.write( "#!/bin/bash\n" )
+ #           f.write( executable + " " + arguments + "\n" )
+ #           f.close()
+ #       os.system( "chmod +x " + jobfile )
 
         # Generate a condor submission file and submit the job to Jazz
-        condor_case_name = case + "_decoy_disc"
-        print("Submitting decoy-discrimination test case from Yarov-Yaravoy set:", condor_case_name)
-        if ( cluster_type == "MARCC" ): 
-            write_and_submit_slurm_batch_script( outdir, condor_case_name, jobfile )
-        elif ( cluster_type == "STAMPEDE" ): 
-            write_and_submit_stampede2_slurm_script( outdir, condor_case_name, jobfile )
-        else: 
-            write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
+  #      condor_case_name = case + "_decoy_disc"
+  #      print("Submitting decoy-discrimination test case from Yarov-Yaravoy set:", condor_case_name)
+  #      if ( cluster_type == "MARCC" ): 
+  #          write_and_submit_slurm_batch_script( outdir, condor_case_name, jobfile )
+  #      elif ( cluster_type == "STAMPEDE" ): 
+  #          write_and_submit_stampede2_slurm_script( outdir, condor_case_name, jobfile )
+  #      else: 
+  #          write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
 
 
     ### Test Set #2: Dutagaci High Resolution Decoys (Molecular dynamics generated)
@@ -932,6 +931,11 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
     # For each test case, generate specific arguments, condor_files, and then run
     for case in test02_cases:
 
+        # Open list of decoy lists
+        with open( inputs + "/dutagaci-set/" + case + "/list.of.decoy.lists", 'rt' ) as f: 
+            list_of_decoy_lists = f.readlines()
+            list_of_decoy_lists = [ x.strip() for x in list_of_decoy_lists ] 
+
         outdir = benchmark + "data/" + energy_fxn + "/test_3.3_decoy_discrimination/dutagaci-set/" + case
         os.system( "mkdir " + outdir )
         os.system( "cd " + outdir )
@@ -939,32 +943,38 @@ def run_decoy_discrimination_calc( energy_fxn, rosetta_exe_path, cluster_type, r
         # Setup case-specific variables (pdbfile, spanfile, xmlargs)
         native = inputs + "/dutagaci-set/" + case + "/" + case + "_native.pdb"
         spanfile = inputs + "/dutagaci-set/" + case + "/" + case + ".span"
-        modelslist = inputs + "/dutagaci-set/" + case + "/decoys.list"
-        s = Template( " -overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
-        arguments = s.substitute( modellist=modelslist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
-        if ( restore == True ): 
-            arguments = arguments + " -restore_talaris_behavior -restore_lazaridis_imm_behavior"
-        if ( implicit_lipids == True ): 
-            arguments = arguments + " -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
+        
+        # Iterate over all decoy lists
+        i = 1
+        for decoy_set in list_of_decoy_lists: 
 
+            modelslist = inputs + "/dutagaci-set/" + case + "/" + decoy_set
+            s = Template( " -overwrite -in:file:native $native -in:file:l $modellist -mp:setup:spanfiles $span -parser:script_vars sfxn_weights=$sfxn -parser:protocol $xml -out:file:scorefile refined_models.sc -out:path:all $outdir")
+            arguments = s.substitute( modellist=modelslist, span=spanfile, xml=xml_script, sfxn=Options.energy_fxn, native=native, outdir=outdir)
+            if ( restore == True ): 
+                arguments = arguments + " -restore_talaris_behavior -restore_lazaridis_imm_behavior"
+            if ( implicit_lipids == True ): 
+                arguments = arguments + " -mp:lipids:temperature 37.0 -mp:lipids:composition DLPC"
 
-        # Write arguments and executable to a separate file
-        jobfile = outdir + "/" + case + "_seqrecov.sh"
-        with open( jobfile, 'a' ) as f: 
-            f.write( "#!/bin/bash\n" )
-            f.write( executable + " " + arguments + "\n" )
-            f.close()
-        os.system( "chmod +x " + jobfile )
+            # Write arguments and executable to a separate file
+            jobfile = outdir + "/" + case + "_relax_batch_" + str(i) + ".sh"
+            with open( jobfile, 'a' ) as f: 
+                f.write( "#!/bin/bash\n" )
+                f.write( executable + " " + arguments + "\n" )
+                f.close()
+            os.system( "chmod +x " + jobfile )
 
-        # Generate a condor submission file and submit the job to Jazz
-        condor_case_name = case + "_dutagaci"
-        print("Submitting decoy-discrimination test case from Dutagaci set:", condor_case_name)
-        if ( cluster_type == "MARCC" ): 
-            write_and_submit_slurm_batch_script( outdir, condor_case_name, jobfile )
-        elif ( cluster_type == "STAMPEDE" ): 
-            write_and_submit_stampede2_slurm_script( outdir, condor_case_name, jobfile )
-        else: 
-            write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
+            # Generate a condor submission file and submit the job to Jazz
+            condor_case_name = case + "_dutagaci_" + str(i)
+            print("Submitting decoy-discrimination test case from Dutagaci set:", condor_case_name)
+            if ( cluster_type == "MARCC" ): 
+                write_and_submit_slurm_batch_script( outdir, condor_case_name, jobfile )
+            elif ( cluster_type == "STAMPEDE" ): 
+                write_and_submit_stampede2_slurm_script( outdir, condor_case_name, jobfile )
+            else: 
+                write_and_submit_condor_script( outdir, condor_case_name, executable, arguments )
+
+            i = i+1
 
 def main( args ):
 
@@ -994,10 +1004,6 @@ def main( args ):
     parser.add_option( '--implicit_lipids', '-i', 
         action="store", 
         help="Use implicit lipids and default parameters when running this benchamrk", )
-
-    parser.add_option( '--add_pore', '-a', 
-        action="store", 
-        help="Calculate pores and cavities where applicable", )
 
     (options, args) = parser.parse_args(args=args[1:])
     global Options
@@ -1042,10 +1048,6 @@ def main( args ):
     if ( Options.implicit_lipids == "true" ): 
         include_lipids = True
 
-    add_pore = False
-    if ( Options.add_pore == "true" ): 
-        add_pore = True
-
     # If it doesn't exist, make the output data directory
     datadir = benchmark + "data/"
     if ( not os.path.isdir(datadir) ): 
@@ -1062,16 +1064,16 @@ def main( args ):
     if ( "landscape" in test_types ): 
     
         # Energy landscape test for single TM peptides found in nature
-        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.1_monomer_landscape", "helices.list", "xml/test_1.1_monomer_landscape.xml", restore, include_lipids, add_pore )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.1_monomer_landscape", "helices.list", "xml/test_1.1_monomer_landscape.xml", restore, include_lipids )
 
         # Energy landscape test for aromatic-capped peptides
-        #run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.2_aro_landscape", "aro_helices.list", "xml/test_1.2_aro_landscape.xml", restore, include_lipids, add_pore, "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.2_aro_landscape", "aro_helices.list", "xml/test_1.2_aro_landscape.xml", restore, include_lipids, "true" )
 
         # Energy landscape test for leucine-lysine peptides
-        #run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.3_lk_landscape", "lk_peptides.list", "xml/test_1.3_lk_landscape.xml", restore, include_lipids, add_pore, "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.3_lk_landscape", "lk_peptides.list", "xml/test_1.3_lk_landscape.xml", restore, include_lipids, "true" )
 
         # Energy landscape test for adsorbed peptides
-        #run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.4_adsorbed_pept_landscape", "adsorbed_peptides.list", "xml/test_1.3_lk_landscape.xml", restore, include_lipids, add_pore, "true" )
+        run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_1.4_adsorbed_pept_landscape", "adsorbed_peptides.list", "xml/test_1.3_lk_landscape.xml", restore, include_lipids, "true" )
 
     # Run prediction calculations
     if ( "prediction" in test_types ): 
@@ -1116,12 +1118,12 @@ def main( args ):
         #run_energy_landscape_calc( Options.energy_fxn, rosetta_exe_path, Options.cluster_type, "test_2.3_pH_dependent_insertion", "pH-inserted-helices.list", "xml/test_2.3_pH_landscape.xml", restore, include_lipids, add_pore, "true", "7" )
 
         # ddG of mutation calculation for Moon & Fleming Set
-        run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA/OmpLA_Moon_Fleming_set.dat", "OmpLA_Moon_Fleming_set", restore,  include_lipids, add_pore )
+        #run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA/OmpLA_Moon_Fleming_set.dat", "OmpLA_Moon_Fleming_set", restore,  include_lipids, add_pore )
 
         # ddG of mutation calculation for McDonald & Fleming Set
-        run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA_aro/OmpLA_aro_McDonald_Fleming_set.dat", "OmpLA_aro_McDonald_Fleming_set", restore, include_lipids, add_pore )
+        #run_ddG_of_mutation_calc( Options.energy_fxn, "OmpLA_aro/OmpLA_aro_McDonald_Fleming_set.dat", "OmpLA_aro_McDonald_Fleming_set", restore, include_lipids, add_pore )
 
         # ddG of mutation calculation for Marx & Fleming set
-        run_ddG_of_mutation_calc( Options.energy_fxn, "PagP/PagP_Marx_Fleming_set.dat", "PagP_Marx_Fleming_set", restore, include_lipids, add_pore )
+        run_ddG_of_mutation_calc( Options.energy_fxn, "PagP/PagP_Marx_Fleming_set.dat", "PagP_Marx_Fleming_set", restore, include_lipids, False )
 
 if __name__ == "__main__" : main(sys.argv)
